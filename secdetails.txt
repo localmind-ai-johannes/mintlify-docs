@@ -1,0 +1,83 @@
+
+Kategorie 1
+Netzwerkarchitektur & Isolation
+Unsere neue Netzwerk-Infrastruktur ist so konzipiert, dass sie Angriffe bereits am Perimeter abwehrt und eine strikte Trennung zwischen allen Systemen gewährleistet, um die Ausbreitung von Bedrohungen zu verhindern.
+
+Maßnahme	Beschreibung der Umsetzung
+Multi-Layer-Firewall & Web Application Firewall (WAF)	Jeglicher Datenverkehr zu unseren Systemen durchläuft eine mehrstufige Firewall-Lösung. Eine vorgelagerte Enterprise Web Application Firewall (WAF) analysiert Anfragen auf Layer 7 und blockiert proaktiv gängige Web-Angriffe wie SQL-Injections, Cross-Site-Scripting (XSS) und andere OWASP-Top-10-Bedrohungen, noch bevor sie unsere Server erreichen.
+Strikte VLAN-Segmentierung	Jede Kundenumgebung wird in einem eigenen, logisch vollständig isolierten virtuellen Netzwerk (VLAN) betrieben. Es gibt standardmäßig keine Verbindung zwischen den VLANs verschiedener Kunden. Dieses Prinzip der „digitalen Inseln“ verhindert effektiv die laterale Ausbreitung (Lateral Movement) im Falle einer Kompromittierung einer einzelnen Instanz.
+Kontrolle des ausgehenden Datenverkehrs (Egress Filtering)	Standardmäßig können auch alle ausgehenden Verbindungen von einer Kunden-VM ins Internet blockiert werden. Nur explizit definierte, notwendige Ziele (z. B. bestimmte KI-API-Endpunkte oder Software-Update-Server) werden auf einer Whitelist freigegeben. Dies verhindert, dass kompromittierte Systeme Daten an Angreifer senden (Datenexfiltration) oder weitere Schadsoftware nachladen können.
+Verschlüsselte End-to-End-Kommunikation	Die gesamte Kommunikation, sowohl extern ins Internet als auch intern zwischen unseren Systemkomponenten, wird ausnahmslos mit starken und aktuellen TLS-Protokollen (Transport Layer Security) verschlüsselt. Wir erzwingen die Verwendung sicherer Cipher Suites, um Man-in-the-Middle-Angriffe und das Abhören von Daten zu unterbinden.
+
+Kategorie 2
+Infrastruktur & Host-Härtung
+Die physischen und virtuellen Server, die unsere Plattform betreiben, sind systematisch gehärtet, um ihre Angriffsfläche bestmöglich zu minimieren.
+
+Maßnahme	Beschreibung der Umsetzung
+Physische und logische Netzwerktrennung	Hypervisor-Hosts nutzen physisch getrennte Netzwerkschnittstellen für verschiedene Aufgaben: Management, Cluster-Kommunikation und den Datenverkehr der virtuellen Maschinen. Dadurch ist sichergestellt, dass selbst im unwahrscheinlichen Fall einer Kompromittierung auf VM-Ebene kein Zugriff auf die kritische Management-Infrastruktur möglich ist.
+Gehärtete Host-Systeme	Alle Host-Systeme basieren auf einem gehärteten Linux Basis-Image, bei dem nicht betriebsnotwendigen Dienste und Softwarepakete entfernt wurden. Konfigurationen werden regelmäßig gegen anerkannte Sicherheits-Benchmarks (z. B. CIS) geprüft, um eine konforme und sichere Konfiguration sicherzustellen.
+Restriktive Zugriffskontrolle auf Hypervisor-Ebene	Der administrative Zugriff auf die Virtualisierungs-Hosts ist streng limitiert. Er ist ausschließlich aus einem dedizierten, isolierten Management-Netzwerk und bestimmten, autorisierten IP-Adressen erlaubt. Jeder Zugriff erfordert zudem eine verpflichtende Multi-Faktor-Authentifizierung (MFA).
+
+Kategorie 3
+Anwendungs- und VM-Sicherheit
+Jede virtuelle Maschine (VM) ist eine eigene kleine Festung. Wir wenden moderne Sicherheitsprinzipien an, um die Anwendungen darin zu schützen.
+
+Maßnahme	Beschreibung der Umsetzung
+Zero-Inbound-Access für VMs	Administrativer Fernzugriff via SSH oder RDP auf unsere Kunden-VMs ist bei unseren Partnerbetreibern standardmäßig deaktiviert und blockiert. Die gesamte Verwaltung, Konfiguration und Wartung erfolgt über einen proprietären Management-Agenten, der eine gesicherte, ausgehende Verbindung zum Managementsystem aufbaut. Dadurch gibt es keine offenen Ports, die für Brute-Force-Angriffe oder sonstig geartete Angriffe missbraucht werden könnten.
+Service-Isolation auf Applikationsebene	Kritische Backend-Dienste wie Datenbanken (z.B. PostgreSQL) oder Caching-Systeme (z.B. Redis) sind so konfiguriert, dass sie ausschließlich auf der lokalen Loopback-Schnittstelle (localhost) lauschen. Sie sind somit aus dem Netzwerk nicht direkt erreichbar, was das Risiko von direkten Angriffen auf diese Komponenten drastisch reduziert.
+Sicherheit in der CI/CD-Pipeline	Bereits während der Entwicklung und vor jedem Deployment werden unsere Anwendungscontainer und deren Abhängigkeiten automatisch auf bekannte Schwachstellen (CVEs) gescannt. Builds mit kritischen Sicherheitslücken werden automatisch blockiert und gelangen nicht in die Produktivumgebung. Dependencies mit CVE-Scores High und Critical werden innerhalb 48h geupdated, sofern technisch möglich und ein Update seitens des Dependency-Herstellers zur Verfügung steht.
+
+Kategorie 4
+Datensicherheit, Storage und Backups
+Ihre Daten sind Ihr wertvollstes Gut. Wir schützen sie durch Verschlüsselung, Redundanz und ein krisensicheres Backup-Konzept.
+
+Maßnahme	Beschreibung der Umsetzung
+Verschlüsselung im Ruhezustand (Encryption-at-Rest)	Alle Kundendaten werden auf hochmodernem Enterprise-Storage gespeichert, der standardmäßig eine hardwarebasierte AES-256-Verschlüsselung auf Festplattenebene (Self-Encrypting Drives) einsetzt. Selbst bei einem physischen Diebstahl der Datenträger sind die darauf befindlichen Daten unlesbar und wertlos.
+Unveränderliche (Immutable) und getrennte Backups	Wir erstellen regelmäßige, verschlüsselte Backups Ihrer Daten, die auf einem separaten, netzwerktechnisch und physisch getrennten Backup-System gespeichert werden. Diese Backups sind „immutable“ (unveränderlich), was bedeutet, dass sie nach der Erstellung für einen definierten Zeitraum weder verändert noch gelöscht werden können – ein essenzieller Schutz vor Ransomware.
+
+Kategorie 5
+Überwachung, Erkennung und Reaktion
+Wir überwachen unsere Systeme rund um die Uhr, um Anomalien und potenzielle Angriffe in Echtzeit zu erkennen und sofort darauf reagieren zu können.
+
+Maßnahme	Beschreibung der Umsetzung
+Zentrales SIEM und Log-Management	Ein Security Information and Event Management (SIEM) System sammelt und korreliert sicherheitsrelevante Logs und Events von allen Systemen (Firewalls, Server, Anwendungen). Es nutzt vordefinierte Regeln und Verhaltensanalysen, um verdächtige Aktivitäten zu erkennen und unser Sicherheitsteam in Echtzeit zu alarmieren.
+File Integrity Monitoring (FIM)	Ein Agent auf jeder VM überwacht kritische System- und Anwendungsdateien auf unerwartete Änderungen. Jegliche Manipulation, die auf eine Kompromittierung oder eine unautorisierte Konfigurationsänderung hindeuten könnte, löst sofort einen Alarm aus.
+Endpoint Detection & Response (EDR)	Neben der Log-Analyse setzen wir eine EDR-Lösung ein, die das Verhalten von Prozessen und Systemaufrufen in Echtzeit überwacht. Mithilfe von automatisierter Verhaltensanalyse erkennt sie auch komplexe, dateilose Angriffe und Zero-Day-Malware, die von traditionellen Scannern übersehen werden.
+Lückenloses Kernel-Level-Auditing	Ein Auditing-Framework auf Betriebssystemebene protokolliert jeden sicherheitsrelevanten Systemaufruf (z.B. Dateizugriffe, Prozessstarts, Netzwerkverbindungen). Diese unveränderbaren Protokolle ermöglichen eine lückenlose forensische Aufklärung jeder Aktivität auf einem System.
+
+Kategorie 6
+Identitäts- und Zugriffsmanagement (IAM)
+Der menschliche Faktor ist oft die größte Schwachstelle. Wir minimieren dieses Risiko durch strenge Zugriffskontrollen und klare Prozesse.
+
+Maßnahme	Beschreibung der Umsetzung
+Prinzip der geringsten Rechte (Least Privilege) & RBAC	Jeder Mitarbeiter und jedes technische Systemkonto erhält nur die minimal notwendigen Berechtigungen, um seine definierte Aufgabe zu erfüllen (Role-Based Access Control). Es gibt keine universellen Administratoren-Konten für den Regelbetrieb.
+4-Augen-Prinzip für kritische Operationen	Änderungen an sensiblen Systemen, wie Firewall-Regeln, Produktions-Deployments oder Backup-Wiederherstellungen, erfordern die explizite Freigabe durch eine zweite, autorisierte Person. Dies verhindert unautorisierte Einzelaktionen und reduziert das Fehlerrisiko.
+Multi-Faktor-Authentifizierung (MFA) für alle Zugriffe	Jeder administrative Zugriff auf unsere internen Systeme, Cloud-Plattformen und Management-Tools ist ausnahmslos durch eine Multi-Faktor-Authentifizierung (z.B. über Hardware-Token oder TOTP-Apps) abgesichert.
+Just-in-Time (JIT) Privilegien	Erhöhte Berechtigungen werden nicht permanent vergeben, sondern nur bei Bedarf für einen begrenzten Zeitraum angefordert und genehmigt (Just-in-Time-Access). Nach Ablauf der Zeit werden die Rechte automatisch wieder entzogen.
+
+Kategorie 7
+Schwachstellen- und Patch-Management
+Eine sichere Architektur muss kontinuierlich gepflegt werden, um gegen neue Bedrohungen gewappnet zu sein.
+
+Maßnahme	Beschreibung der Umsetzung
+Kontinuierliches Schwachstellen-Scanning	Wir scannen unsere gesamte Infrastruktur und alle Software-Artefakte regelmäßig und automatisiert auf bekannte Sicherheitslücken. Die Ergebnisse werden nach Kritikalität (CVSS-Score) priorisiert, um sicherzustellen, dass die gefährlichsten Lücken zuerst geschlossen werden.
+Automatisiertes und zeitnahes Patch-Management	Für unsere Betriebssysteme ist ein automatisiertes Patch-Management (Unattended Upgrades) für Sicherheitspatches aktiviert.
+Kernel-Live-Patching	Um maximale Sicherheit bei gleichzeitig hoher Verfügbarkeit zu gewährleisten, setzen wir wo möglich auf Kernel-Live-Patching. Dies ermöglicht es uns, kritische Sicherheitslücken im Kern des Betriebssystems zu schließen, ohne dass ein Neustart des Servers erforderlich ist.
+
+Kategorie 8
+Governance, Compliance & Datensouveränität
+Technische Maßnahmen sind nur eine Seite der Medaille. Wahre Sicherheit entsteht durch etablierte Prozesse, externe Überprüfung und die Freiheit unserer Kunden, die Hoheit über ihre Daten zu behalten. Aus diesem Grund haben wir unsere Strategie für Governance und Hosting grundlegend weiterentwickelt.
+
+Maßnahme	Beschreibung der Umsetzung
+Zertifizierte Partner-Rechenzentren (ISO 27001)	Für alle von uns verwalteten Kundeninstanzen arbeiten wir ausschließlich mit Rechenzentrumspartnern zusammen, die nach ISO/IEC 27001 zertifiziert sind. Diese international anerkannte Norm bestätigt, dass unsere Partner ein umfassendes Informationssicherheits-Managementsystem (ISMS) betreiben. Dies garantiert höchste Standards bei physischer Sicherheit, Zutrittskontrollen, Risikomanagement und Betriebsprozessen.
+Anstreben der eigenen ISO 27001 Zertifizierung	Localmind befindet sich aktuell im Prozess der Implementierung eines eigenen Informationssicherheits-Managementsystems (ISMS) mit dem klaren Ziel, die ISO 27001 Zertifizierung für unsere internen Prozesse und unser Produktmanagement zu erlangen. Dies formalisiert unser Engagement für Sicherheit auf allen Unternehmensebenen und macht es extern überprüfbar.
+Maximale Datensouveränität & Hosting-Flexibilität	
+Wir haben uns strategisch entschieden, keine eigene universelle Public-Cloud-Infrastruktur mehr zu betreiben. Stattdessen geben wir Ihnen die volle Kontrolle und Wahlfreiheit über den Speicherort Ihrer Daten. Sie entscheiden, welches Modell am besten zu Ihren Sicherheits- und Compliance-Anforderungen passt:
+
+On-Premise: Betrieb in Ihrer eigenen, vollständig kontrollierten Infrastruktur. Dabei kann ausgewählt werden, ob ausschließlich die Applikation on-premise gehosted wird und GPU-Leistung extern bezogen wird, oder beides.
+
+Private Cloud Ihrer Wahl: Hosting bei einem von Ihnen gewählten und auditierten Virtual Private Cloud-/VM-Anbieter oder Systemintegrator.
+
+Managed Private Cloud bei unseren Partnern: Nutzen Sie die Vorteile einer gemanagten Lösung in den hochsicheren, ISO-zertifizierten Rechenzentren unserer Partner.
+
+Definierter Einsatz eigener Infrastruktur	Unsere eigene, neu gehärtete Cloud-Infrastruktur wird ausschließlich für nicht-kritische Anwendungsfälle eingesetzt, oder auf explizitem Wunsch des Kunden.

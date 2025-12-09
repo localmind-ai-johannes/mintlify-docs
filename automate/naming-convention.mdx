@@ -1,0 +1,222 @@
+---
+title: "Naming Convention"
+description: "Best Practices für die Benennung von Nodes und Workflows in Automate"
+icon: "tag"
+---
+
+# Naming Convention
+
+Eine konsistente und aussagekräftige Benennung von Workflows und Nodes ist entscheidend für die Wartbarkeit und Verständlichkeit Ihrer Automatisierungen.
+
+## Warum ist Benennung wichtig?
+
+<CardGroup cols={2}>
+  <Card title="Wartbarkeit" icon="wrench">
+    Gut benannte Workflows sind einfacher zu verstehen und zu aktualisieren, besonders wenn Sie nach Monaten wieder daran arbeiten.
+  </Card>
+  <Card title="Teamarbeit" icon="users">
+    Klare Namen helfen Ihrem Team, schnell zu verstehen, was ein Workflow macht, ohne ihn öffnen zu müssen.
+  </Card>
+  <Card title="Debugging" icon="bug">
+    Aussagekräftige Namen erleichtern das Auffinden von Problemen in Execution-Logs.
+  </Card>
+  <Card title="Skalierung" icon="chart-line">
+    Mit wachsender Anzahl von Workflows werden gute Namenskonventionen immer wichtiger.
+  </Card>
+</CardGroup>
+
+## Workflow-Namen
+
+### Best Practices
+
+**Gut:**
+- `Send Welcome Email to New Users`
+- `Process Customer Support Tickets`
+- `Daily Report Generation`
+- `Sync CRM with Localmind Agents`
+
+**Schlecht:**
+- `Workflow 1`
+- `Test`
+- `My Workflow`
+- `Untitled`
+
+### Namensstruktur
+
+Verwenden Sie eine konsistente Struktur:
+
+```
+[Aktion] [Objekt] [Kontext]
+```
+
+**Beispiele:**
+- `Send Email to New Users`
+- `Process Order Payment`
+- `Generate Weekly Report`
+- `Sync Data from CRM`
+
+### Präfixe für Organisation
+
+Für größere Teams können Präfixe hilfreich sein:
+
+- `[Team]-[Funktion]`: `Marketing-Send Newsletter`
+- `[Umgebung]-[Funktion]`: `Production-Process Orders`
+- `[Priorität]-[Funktion]`: `Critical-Monitor System Health`
+
+## Node-Namen
+
+### Standard-Nodes benennen
+
+Auch Standard-Nodes sollten aussagekräftige Namen erhalten:
+
+<CodeGroup>
+```json HTTP Request Node
+{
+  "name": "Get User Data from API",
+  "type": "httpRequest",
+  "parameters": {
+    "method": "GET",
+    "url": "https://api.example.com/users"
+  }
+}
+```
+
+```json IF Node
+{
+  "name": "Check if User is Premium",
+  "type": "if",
+  "conditions": {
+    "userType": "premium"
+  }
+}
+```
+
+```json Set Node
+{
+  "name": "Prepare Email Data",
+  "type": "set",
+  "values": {
+    "subject": "Welcome!",
+    "body": "{{ $json.message }}"
+  }
+}
+```
+</CodeGroup>
+
+### LokalMind Agent Nodes
+
+Für Agent-Nodes verwenden Sie beschreibende Namen:
+
+**Gut:**
+- `Analyze Customer Sentiment`
+- `Generate Product Description`
+- `Extract Key Information`
+
+**Schlecht:**
+- `Agent 1`
+- `Localmind Agent`
+- `AI Call`
+
+## Namenskonventionen
+
+### Groß- und Kleinschreibung
+
+**Empfohlen: Pascal Case für Workflows**
+- `SendWelcomeEmail`
+- `ProcessCustomerOrders`
+- `GenerateDailyReports`
+
+**Alternative: Kebab Case**
+- `send-welcome-email`
+- `process-customer-orders`
+- `generate-daily-reports`
+
+### Sprache
+
+**Empfehlung:** Verwenden Sie Englisch für technische Namen, Deutsch für Beschreibungen:
+
+- Workflow-Name: `SendWelcomeEmail`
+- Beschreibung: "Sendet Willkommens-E-Mail an neue Benutzer"
+
+### Länge
+
+- **Workflows:** 3-5 Wörter (20-50 Zeichen)
+- **Nodes:** 2-4 Wörter (15-40 Zeichen)
+- Vermeiden Sie zu lange Namen, die in der UI abgeschnitten werden
+
+## Beschreibungen hinzufügen
+
+Nutzen Sie das Beschreibungsfeld für zusätzliche Kontextinformationen:
+
+**Workflow-Beschreibung:**
+```
+Sendet automatisch eine Willkommens-E-Mail an neue Benutzer innerhalb von 5 Minuten nach der Registrierung. 
+Verwendet den "Welcome Email" Agent für personalisierte Nachrichten.
+```
+
+**Node-Beschreibung:**
+```
+Ruft Benutzerdaten aus der CRM-API ab. 
+Timeout: 30 Sekunden. 
+Retry bei Fehlern: 3 Versuche.
+```
+
+## Beispiele aus der Praxis
+
+### E-Commerce Workflow
+
+```
+Workflow: ProcessOrderPayment
+├── Node: "Receive Order Webhook"
+├── Node: "Validate Payment Method"
+├── Node: "Process Payment via Stripe"
+├── Node: "Check if Payment Successful"
+│   ├── True: "Send Confirmation Email"
+│   └── False: "Send Payment Failed Notification"
+└── Node: "Update Order Status in Database"
+```
+
+### Customer Support Workflow
+
+```
+Workflow: HandleSupportTicket
+├── Node: "Monitor Support Email Inbox"
+├── Node: "Classify Ticket Priority"
+├── Node: "Route to Appropriate Agent"
+│   ├── High Priority: "Notify Senior Support"
+│   └── Normal: "Add to Queue"
+├── Node: "Generate Response with AI Agent"
+└── Node: "Send Response to Customer"
+```
+
+## Checkliste
+
+<Check>
+- [ ] Workflow-Name beschreibt klar die Hauptfunktion
+- [ ] Alle Nodes haben aussagekräftige Namen
+- [ ] Konsistente Namenskonvention im gesamten Projekt
+- [ ] Beschreibungen für komplexe Workflows/Nodes vorhanden
+- [ ] Namen sind nicht zu lang (werden nicht abgeschnitten)
+- [ ] Keine generischen Namen wie "Test" oder "Workflow 1"
+</Check>
+
+## Häufige Fehler vermeiden
+
+<Warning>
+**Vermeiden Sie:**
+- Generische Namen ohne Kontext
+- Namen, die nur für Sie selbst verständlich sind
+- Zu kurze Abkürzungen, die nicht selbsterklärend sind
+- Namen, die sich im Laufe der Zeit ändern (z.B. "Neuer Workflow")
+</Warning>
+
+<Tip>
+**Tipp:** Erstellen Sie eine Namenskonventions-Dokumentation für Ihr Team und halten Sie sich konsequent daran. Dies erleichtert die Zusammenarbeit erheblich.
+</Tip>
+
+---
+
+<Note>
+**Weiterführende Themen:** Lesen Sie auch unsere Seiten zu [Dokumentation](/automate/documentation) und [Testing](/automate/testing) für weitere Best Practices.
+</Note>
+

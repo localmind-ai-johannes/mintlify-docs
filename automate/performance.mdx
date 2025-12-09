@@ -1,0 +1,338 @@
+---
+title: "Performance"
+description: "Performance-Optimierung für Automate-Workflows"
+icon: "gauge"
+---
+
+# Performance
+
+Optimieren Sie die Performance Ihrer Automate-Workflows für schnellere Ausführung und bessere Ressourcennutzung.
+
+## Performance-Grundlagen
+
+<CardGroup cols={2}>
+  <Card title="Ausführungszeit" icon="clock">
+    Minimieren Sie die Gesamtausführungszeit Ihrer Workflows.
+  </Card>
+  <Card title="Ressourcennutzung" icon="server">
+    Optimieren Sie die Nutzung von CPU, Memory und Netzwerk.
+  </Card>
+  <Card title="Skalierbarkeit" icon="chart-line">
+    Workflows sollten auch unter Last performant bleiben.
+  </Card>
+  <Card title="Kosten" icon="dollar-sign">
+    Optimierte Workflows reduzieren API-Kosten und Ressourcenverbrauch.
+  </Card>
+</CardGroup>
+
+## Optimierungsstrategien
+
+### 1. Parallele Verarbeitung
+
+**Nutzen Sie parallele Ausführung wo möglich:**
+
+<AccordionGroup>
+  <Accordion title="Parallele API-Calls" icon="bolt">
+    **Statt sequenziell:**
+    
+    ```
+    API Call 1 → API Call 2 → API Call 3
+    (Gesamtzeit: 3 × API-Zeit)
+    ```
+    
+    **Parallele Ausführung:**
+    
+    ```
+    API Call 1 ┐
+    API Call 2 ├→ Zusammenführen
+    API Call 3 ┘
+    (Gesamtzeit: max(API-Zeiten))
+    ```
+    
+    <CodeGroup>
+    ```json Parallele Verarbeitung
+    {
+      "strategy": "parallel",
+      "nodes": [
+        "Get User Data",
+        "Get Order History",
+        "Get Preferences"
+      ],
+      "mergeNode": "Combine Results"
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Batch-Verarbeitung" icon="layer-group">
+    **Verarbeiten Sie mehrere Items gleichzeitig:**
+    
+    - Nutzen Sie Loop Nodes für Batch-Processing
+    - Verarbeiten Sie Items in Chunks
+    - Vermeiden Sie sequenzielle Loops
+    
+    <Tip>
+      Verarbeiten Sie Items in Batches von 10-50 für optimale Performance.
+    </Tip>
+  </Accordion>
+</AccordionGroup>
+
+### 2. Caching
+
+**Nutzen Sie Caching für wiederholte Anfragen:**
+
+<CodeGroup>
+```json Caching-Strategie
+{
+  "cacheable": [
+    "User Data (TTL: 1 Stunde)",
+    "Product Information (TTL: 24 Stunden)",
+    "Configuration Settings (TTL: 1 Tag)"
+  ],
+  "notCacheable": [
+    "Real-time Data",
+    "Transaction Data",
+    "Personalized Content"
+  ]
+}
+```
+
+```javascript Cache-Implementierung
+// Prüfe Cache vor API-Call
+const cacheKey = `user_${userId}`;
+const cached = await getFromCache(cacheKey);
+
+if (cached && !isExpired(cached)) {
+  return cached.data;
+}
+
+// API-Call nur wenn nicht im Cache
+const data = await fetchFromAPI(userId);
+await saveToCache(cacheKey, data, { ttl: 3600 });
+return data;
+```
+</CodeGroup>
+
+### 3. API-Optimierung
+
+**Optimieren Sie API-Calls:**
+
+<CardGroup cols={2}>
+  <Card title="Batch-Requests" icon="layer-group">
+    Nutzen Sie Batch-APIs statt einzelner Requests:
+    
+    ```
+    Statt: 100 einzelne Requests
+    Nutze: 1 Batch-Request mit 100 Items
+    ```
+  </Card>
+  <Card title="Pagination" icon="file-lines">
+    Verwenden Sie Pagination für große Datensätze:
+    
+    ```
+    Page 1 (100 Items) → Process
+    Page 2 (100 Items) → Process
+    ...
+    ```
+  </Card>
+  <Card title="Selective Fields" icon="filter">
+    Fordern Sie nur benötigte Felder an:
+    
+    ```
+    Statt: GET /users (alle Felder)
+    Nutze: GET /users?fields=id,name,email
+    ```
+  </Card>
+  <Card title="Conditional Requests" icon="check">
+    Nutzen Sie ETags und Last-Modified Headers:
+    
+    ```
+    If-None-Match: "etag-value"
+    If-Modified-Since: "date"
+    ```
+  </Card>
+</CardGroup>
+
+### 4. Timeout-Konfiguration
+
+**Setzen Sie angemessene Timeouts:**
+
+<CodeGroup>
+```json Timeout-Empfehlungen
+{
+  "fastAPIs": {
+    "timeout": 5,
+    "description": "Lokale APIs, schnelle Services"
+  },
+  "standardAPIs": {
+    "timeout": 30,
+    "description": "Externe APIs, Standard-Services"
+  },
+  "slowAPIs": {
+    "timeout": 60,
+    "description": "Schwere Operationen, Batch-Processing"
+  },
+  "agentCalls": {
+    "timeout": 45,
+    "description": "Localmind Agent Aufrufe"
+  }
+}
+```
+</CodeGroup>
+
+### 5. Datenfilterung
+
+**Filtern Sie Daten früh im Workflow:**
+
+<CodeGroup>
+```javascript Frühe Filterung
+// Gut: Filtere früh
+Trigger → Filter (nur relevante Daten) → Process
+
+// Schlecht: Filtere spät
+Trigger → Process (alle Daten) → Filter → Output
+```
+
+```json Filter-Strategie
+{
+  "earlyFiltering": {
+    "benefits": [
+      "Weniger Daten zu verarbeiten",
+      "Schnellere Ausführung",
+      "Geringerer Speicherverbrauch"
+    ],
+    "examples": [
+      "Filtere nach Status vor Verarbeitung",
+      "Filtere nach Datum vor API-Call",
+      "Filtere nach Typ vor Transformation"
+    ]
+  }
+}
+```
+</CodeGroup>
+
+## Performance-Monitoring
+
+### Metriken überwachen
+
+<AccordionGroup>
+  <Accordion title="Ausführungszeit" icon="clock">
+    **Überwachen Sie:**
+    
+    - Gesamtausführungszeit pro Workflow
+    - Zeit pro Node
+    - Durchschnittliche Ausführungszeit
+    - P95/P99 Percentile
+    
+    <CodeGroup>
+    ```json Performance-Metriken
+    {
+      "workflow": "welcome-email",
+      "totalTime": 2.5,
+      "nodeTimes": {
+        "webhook": 0.1,
+        "getUserData": 0.8,
+        "callAgent": 1.2,
+        "sendEmail": 0.4
+      },
+      "p95": 3.2,
+      "p99": 4.5
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Fehlerrate" icon="triangle-exclamation">
+    **Überwachen Sie:**
+    
+    - Fehlerrate pro Workflow
+    - Fehlerrate pro Node
+    - Timeout-Rate
+    - Retry-Rate
+  </Accordion>
+
+  <Accordion title="Ressourcennutzung" icon="server">
+    **Überwachen Sie:**
+    
+    - API-Call-Anzahl
+    - Datenvolumen
+    - Memory-Verbrauch
+    - CPU-Nutzung
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Minimiere API-Calls" icon="arrow-down">
+    Reduzieren Sie die Anzahl der API-Calls durch:
+    - Batch-Requests
+    - Caching
+    - Datenkombination
+  </Card>
+  <Card title="Parallele Verarbeitung" icon="arrows-split-up-and-left">
+    Nutzen Sie parallele Ausführung wo möglich.
+  </Card>
+  <Card title="Frühe Filterung" icon="filter">
+    Filtern Sie Daten so früh wie möglich im Workflow.
+  </Card>
+  <Card title="Angemessene Timeouts" icon="clock">
+    Setzen Sie Timeouts basierend auf erwarteter Antwortzeit.
+  </Card>
+  <Card title="Monitoring" icon="chart-line">
+    Überwachen Sie Performance kontinuierlich.
+  </Card>
+  <Card title="Optimierung" icon="gauge">
+    Optimieren Sie regelmäßig basierend auf Metriken.
+  </Card>
+</CardGroup>
+
+## Performance-Checkliste
+
+<Check>
+- [ ] Parallele Verarbeitung wird genutzt wo möglich
+- [ ] Caching ist für wiederholte Anfragen implementiert
+- [ ] API-Calls sind optimiert (Batch, Pagination)
+- [ ] Timeouts sind angemessen konfiguriert
+- [ ] Datenfilterung erfolgt früh im Workflow
+- [ ] Performance wird überwacht
+- [ ] Langsame Nodes wurden identifiziert und optimiert
+</Check>
+
+## Häufige Performance-Probleme
+
+<AccordionGroup>
+  <Accordion title="Zu viele sequenzielle API-Calls" icon="arrow-right">
+    **Problem:** Workflow führt viele API-Calls nacheinander aus
+    
+    **Lösung:**
+    - Kombinieren Sie Calls zu Batch-Requests
+    - Nutzen Sie parallele Verarbeitung
+    - Implementieren Sie Caching
+  </Accordion>
+
+  <Accordion title="Unnötige Datenverarbeitung" icon="database">
+    **Problem:** Workflow verarbeitet mehr Daten als nötig
+    
+    **Lösung:**
+    - Filtern Sie Daten früh im Workflow
+    - Nutzen Sie Selective Fields in API-Calls
+    - Vermeiden Sie unnötige Transformationen
+  </Accordion>
+
+  <Accordion title="Fehlende Timeouts" icon="clock">
+    **Problem:** Nodes warten zu lange auf Antworten
+    
+    **Lösung:**
+    - Setzen Sie angemessene Timeouts
+    - Implementieren Sie Retry-Logik
+    - Überwachen Sie Timeout-Rate
+  </Accordion>
+</AccordionGroup>
+
+---
+
+<Note>
+**Weiterführende Themen:** Lesen Sie auch unsere Seiten zu [Testing](/automate/testing) und [Debugging](/automate/debugging) für weitere Best Practices.
+</Note>
+

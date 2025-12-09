@@ -1,0 +1,695 @@
+---
+title: "Testing"
+description: "Konkrete Testmethoden für Automate-Workflows - Praktische Anleitung zum Testen und Interpretieren von Ergebnissen"
+icon: "flask"
+---
+
+# Testing
+
+Gründliches Testing ist entscheidend für zuverlässige Automate-Workflows. Diese Seite zeigt Ihnen konkrete Methoden zum Testen Ihrer Workflows und zum korrekten Interpretieren der Ergebnisse.
+
+## Node-Level Testing - Schritt für Schritt
+
+### 1. Node isoliert testen
+
+**Ziel:** Jeden Node einzeln testen, bevor Sie den gesamten Workflow ausführen.
+
+<Steps>
+  <Step title="Node öffnen">
+    1. Klicken Sie auf den Node, den Sie testen möchten
+    2. Stellen Sie sicher, dass alle erforderlichen Parameter ausgefüllt sind
+    3. Überprüfen Sie Credentials und Verbindungen
+  </Step>
+
+  <Step title="Test-Daten vorbereiten">
+    Verwenden Sie realistische Test-Daten:
+    
+    <CodeGroup>
+    ```json Standard Test-Daten
+    {
+      "email": "test@example.com",
+      "name": "Max Mustermann",
+      "message": "Test-Nachricht für Workflow-Testing"
+    }
+    ```
+    
+    ```json Edge Case Test-Daten
+    {
+      "email": "",
+      "name": null,
+      "message": "Sehr lange Nachricht " + "x".repeat(10000)
+    }
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Execute Node ausführen">
+    1. Klicken Sie auf **"Execute Node"** (oder F2)
+    2. Warten Sie auf die Ausführung
+    3. Überprüfen Sie den Status (grün = erfolgreich, rot = Fehler)
+  </Step>
+
+  <Step title="Output analysieren">
+    Klicken Sie auf den Node, um den Output zu sehen:
+    
+    - **Input:** Was ist in den Node hineingegangen?
+    - **Output:** Was kommt heraus?
+    - **Execution Time:** Wie lange hat es gedauert?
+  </Step>
+</Steps>
+
+### 2. Output interpretieren
+
+**Erfolgreiche Node-Ausführung erkennen:**
+
+<CardGroup cols={2}>
+  <Card title="Grüner Status" icon="check">
+    Node wurde erfolgreich ausgeführt
+    
+    **Prüfen Sie:**
+    - Output-Daten sind vorhanden
+    - Datenformat entspricht Erwartungen
+    - Alle erwarteten Felder sind vorhanden
+  </Card>
+  <Card title="Roter Status" icon="triangle-exclamation">
+    Node-Ausführung fehlgeschlagen
+    
+    **Prüfen Sie:**
+    - Error-Message lesen
+    - Input-Daten überprüfen
+    - Credentials/Verbindungen prüfen
+  </Card>
+</CardGroup>
+
+**Output-Daten validieren:**
+
+<CodeGroup>
+```json Erwarteter Output (Beispiel HTTP Request)
+{
+  "statusCode": 200,
+  "headers": {...},
+  "body": {
+    "id": 123,
+    "name": "Test User",
+    "email": "test@example.com"
+  }
+}
+```
+
+```json Tatsächlicher Output prüfen
+// 1. Status Code prüfen
+{{ $json.statusCode }} === 200
+
+// 2. Erwartete Felder vorhanden?
+{{ $json.body.id }} !== undefined
+
+// 3. Datentyp korrekt?
+typeof {{ $json.body.id }} === 'number'
+```
+</CodeGroup>
+
+### 3. Node pinnen für wiederholte Tests
+
+**Warum pinnen?** Sparen Sie Zeit und Geld, indem Sie Node-Outputs pinnen und wiederverwenden.
+
+<Steps>
+  <Step title="Workflow einmal ausführen">
+    Führen Sie den Workflow einmal komplett aus, um echte Daten zu erhalten
+  </Step>
+
+  <Step title="Output pinnen">
+    1. Klicken Sie auf den Node
+    2. Klicken Sie auf das **Pin-Icon** (📌) neben dem Output
+    3. Der Output wird jetzt für zukünftige Tests verwendet
+  </Step>
+
+  <Step title="Gepinnte Daten bearbeiten">
+    Bearbeiten Sie gepinnte Daten für Edge-Case-Tests:
+    
+    - Ändern Sie Werte manuell
+    - Fügen Sie fehlende Felder hinzu
+    - Simulieren Sie Fehlerzustände
+  </Step>
+
+  <Step title="Downstream-Nodes testen">
+    Testen Sie nachgelagerte Nodes ohne erneute API-Calls:
+    
+    - Nodes verwenden automatisch gepinnte Daten
+    - Keine Kosten für API-Calls oder Agent-Aufrufe
+    - Schnellere Iteration
+  </Step>
+</Steps>
+
+<Warning>
+**Kosten sparen:** Ein einzelner Agent-Node-Test ohne Pinning kann $0.10+ kosten. Bei 50 Tests sind das $5+. Pinnen Sie immer!
+</Warning>
+
+## Workflow-Level Testing
+
+### 1. Manuelle Workflow-Ausführung
+
+**Ziel:** Den gesamten Workflow Schritt für Schritt durchlaufen.
+
+<Steps>
+  <Step title="Manual Trigger verwenden">
+    1. Fügen Sie einen **Manual Trigger** Node am Anfang hinzu
+    2. Klicken Sie auf **"Execute Workflow"**
+    3. Der Workflow startet manuell
+  </Step>
+
+  <Step title="Jeden Schritt überwachen">
+    Während der Ausführung:
+    
+    - Beobachten Sie jeden Node-Status (grün/rot)
+    - Klicken Sie auf Nodes, um Zwischenergebnisse zu sehen
+    - Notieren Sie Auffälligkeiten
+  </Step>
+
+  <Step title="Finales Ergebnis prüfen">
+    Am Ende des Workflows:
+    
+    - Prüfen Sie das Endergebnis
+    - Validieren Sie alle erwarteten Outputs
+    - Überprüfen Sie Datenformate
+  </Step>
+</Steps>
+
+### 2. Execution Logs lesen und interpretieren
+
+**Zugriff auf Execution Logs:**
+
+1. Navigieren Sie zum **"Executions"** Tab
+2. Wählen Sie eine Execution aus
+3. Klicken Sie auf **"Open in Editor"**
+
+**Execution-Status interpretieren:**
+
+<CardGroup cols={3}>
+  <Card title="Success" icon="check" color="green">
+    **Grün:** Workflow erfolgreich abgeschlossen
+    
+    **Prüfen Sie:**
+    - Alle Nodes sind grün
+    - Output-Daten sind vorhanden
+    - Execution-Zeit ist akzeptabel
+  </Card>
+  <Card title="Error" icon="triangle-exclamation" color="red">
+    **Rot:** Workflow fehlgeschlagen
+    
+    **Prüfen Sie:**
+    - Welcher Node ist rot?
+    - Error-Message lesen
+    - Input-Daten des fehlgeschlagenen Nodes
+  </Card>
+  <Card title="Waiting" icon="clock" color="yellow">
+    **Gelb:** Workflow wartet
+    
+    **Mögliche Ursachen:**
+    - Webhook wartet auf Request
+    - Schedule-Trigger wartet auf Zeitpunkt
+    - Rate Limit erreicht
+  </Card>
+</CardGroup>
+
+**Node-Details analysieren:**
+
+<AccordionGroup>
+  <Accordion title="Input-Daten prüfen" icon="arrow-right">
+    **Was zu prüfen ist:**
+    
+    - Sind alle erwarteten Felder vorhanden?
+    - Haben die Daten das richtige Format?
+    - Sind Werte null oder undefined?
+    
+    **Beispiel:**
+    ```json
+    // Input sollte so aussehen:
+    {
+      "email": "test@example.com",
+      "name": "Max Mustermann"
+    }
+    
+    // NICHT so:
+    {
+      "email": null,
+      "name": undefined
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Output-Daten validieren" icon="arrow-left">
+    **Was zu prüfen ist:**
+    
+    - Entspricht der Output den Erwartungen?
+    - Sind alle benötigten Felder vorhanden?
+    - Ist das Datenformat korrekt?
+    
+    **Validierung:**
+    ```javascript
+    // Erwarteter Output
+    {
+      "status": "success",
+      "data": {
+        "id": 123,
+        "processed": true
+      }
+    }
+    
+    // Prüfen Sie:
+    - $json.status === "success"
+    - $json.data.id !== undefined
+    - $json.data.processed === true
+    ```
+  </Accordion>
+
+  <Accordion title="Execution-Zeit analysieren" icon="clock">
+    **Was zu prüfen ist:**
+    
+    - Wie lange hat jeder Node gedauert?
+    - Gibt es langsame Nodes?
+    - Überschreitet die Gesamtzeit Limits?
+    
+    **Interpretation:**
+    - **< 1 Sekunde:** Sehr schnell ✅
+    - **1-5 Sekunden:** Normal ✅
+    - **5-30 Sekunden:** Langsam, aber akzeptabel ⚠️
+    - **> 30 Sekunden:** Zu langsam, optimieren ❌
+  </Accordion>
+</AccordionGroup>
+
+### 3. Fehler interpretieren und beheben
+
+**Häufige Fehlertypen erkennen:**
+
+<AccordionGroup>
+  <Accordion title="HTTP-Fehler (4xx, 5xx)" icon="globe">
+    **Fehlercodes interpretieren:**
+    
+    - **400 Bad Request:** Ungültige Anfrage-Parameter
+      - **Lösung:** Prüfen Sie Request-Body und Headers
+    - **401 Unauthorized:** Authentifizierung fehlgeschlagen
+      - **Lösung:** Credentials überprüfen
+    - **404 Not Found:** Endpoint nicht gefunden
+      - **Lösung:** URL überprüfen
+    - **429 Too Many Requests:** Rate Limit erreicht
+      - **Lösung:** Retry-Logik implementieren oder warten
+    - **500 Internal Server Error:** Server-Fehler
+      - **Lösung:** Retry-Logik oder Support kontaktieren
+    
+    **Beispiel-Error-Log:**
+    ```
+    Error: Request failed with status code 401
+    Node: HTTP Request
+    URL: https://api.example.com/users
+    Response: {"error": "Invalid API key"}
+    ```
+  </Accordion>
+
+  <Accordion title="Datenformat-Fehler" icon="arrows-rotate">
+    **Symptome:**
+    
+    - "Cannot read property 'x' of undefined"
+    - "Expected string but got number"
+    - "Invalid JSON format"
+    
+    **Ursachen finden:**
+    
+    1. Prüfen Sie Input-Daten des Nodes
+    2. Überprüfen Sie Expression-Syntax: `{{ $json.fieldName }}`
+    3. Validieren Sie Datenformate zwischen Nodes
+    
+    **Beispiel-Fix:**
+    ```javascript
+    // FALSCH:
+    {{ $json.user.name }}
+    
+    // RICHTIG (mit Null-Check):
+    {{ $json.user?.name || 'Unknown' }}
+    ```
+  </Accordion>
+
+  <Accordion title="Timeout-Fehler" icon="hourglass">
+    **Symptome:**
+    
+    - "Execution timeout exceeded"
+    - Node bleibt lange gelb, dann rot
+    
+    **Lösungen:**
+    
+    1. **Timeout erhöhen:**
+       - Node-Einstellungen → Timeout erhöhen
+       - Standard: 30 Sekunden → 60 Sekunden
+    2. **API optimieren:**
+       - Reduzieren Sie Request-Größe
+       - Nutzen Sie Pagination
+    3. **Retry-Logik:**
+       - Implementieren Sie automatische Retries
+       - Exponential Backoff verwenden
+  </Accordion>
+
+  <Accordion title="Credential-Fehler" icon="key">
+    **Symptome:**
+    
+    - "Authentication failed"
+    - "Invalid credentials"
+    - "API key not found"
+    
+    **Debugging-Schritte:**
+    
+    1. Credentials in Node-Einstellungen überprüfen
+    2. Credentials einzeln testen (z.B. in Postman)
+    3. Environment Variables prüfen
+    4. Credential-Format validieren (Bearer Token, API Key, etc.)
+    
+    **Test in Postman:**
+    ```bash
+    # Testen Sie Credentials zuerst in Postman
+    curl -X GET "https://api.example.com/endpoint" \
+      -H "Authorization: Bearer YOUR_API_KEY"
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Konkrete Test-Szenarien
+
+### Szenario 1: API-Call testen
+
+**Ziel:** Einen HTTP Request Node erfolgreich testen.
+
+<Steps>
+  <Step title="Request in Postman testen">
+    1. Kopieren Sie cURL aus API-Dokumentation
+    2. Importieren Sie in Postman
+    3. Testen Sie mit echten Parametern
+    4. Verifizieren Sie Response-Format
+  </Step>
+
+  <Step title="Nach Automate übertragen">
+    1. Erstellen Sie HTTP Request Node
+    2. Kopieren Sie Method, URL, Headers aus Postman
+    3. Konfigurieren Sie Body (falls POST/PUT)
+  </Step>
+
+  <Step title="Execute Node">
+    1. Klicken Sie auf "Execute Node"
+    2. Prüfen Sie Status (sollte grün sein)
+    3. Validieren Sie Response:
+       - Status Code: 200?
+       - Response Body vorhanden?
+       - Erwartete Felder vorhanden?
+  </Step>
+
+  <Step title="Output validieren">
+    ```json
+    // Erwarteter Output:
+    {
+      "statusCode": 200,
+      "body": {
+        "id": 123,
+        "name": "Test"
+      }
+    }
+    
+    // Prüfen Sie:
+    - $json.statusCode === 200 ✅
+    - $json.body.id !== undefined ✅
+    ```
+  </Step>
+</Steps>
+
+### Szenario 2: Agent-Node testen
+
+**Ziel:** Einen Localmind Agent Node erfolgreich testen.
+
+<Steps>
+  <Step title="Input vorbereiten">
+    Verwenden Sie klare, spezifische Test-Daten:
+    
+    ```json
+    {
+      "text": "Analysiere diese E-Mail: 'Ich brauche dringend Hilfe mit meinem Account.'",
+      "context": "Customer Support"
+    }
+    ```
+  </Step>
+
+  <Step title="Agent konfigurieren">
+    1. Wählen Sie Agent-ID
+    2. Setzen Sie Input-Feld: `{{ $json.text }}`
+    3. Konfigurieren Sie Temperature (0.7 empfohlen)
+    4. Setzen Sie Max Tokens (500 für Tests)
+  </Step>
+
+  <Step title="Execute Node">
+    1. Klicken Sie auf "Execute Node"
+    2. Warten Sie auf Antwort (kann 5-30 Sekunden dauern)
+    3. Prüfen Sie Status
+  </Step>
+
+  <Step title="Output interpretieren">
+    ```json
+    // Erwarteter Output:
+    {
+      "response": "Diese E-Mail ist dringend und sollte priorisiert werden.",
+      "usage": {
+        "tokens": 45,
+        "cost": 0.0001
+      }
+    }
+    
+    // Prüfen Sie:
+    - $json.response !== undefined ✅
+    - $json.response.length > 0 ✅
+    - $json.usage.tokens < 500 ✅ (innerhalb Limits)
+    ```
+  </Step>
+
+  <Step title="Kosten überwachen">
+    - Prüfen Sie Token-Verbrauch
+    - Berechnen Sie Kosten pro Test
+    - Setzen Sie Limits für Produktion
+  </Step>
+</Steps>
+
+<Warning>
+**Kosten sparen:** Nach dem ersten erfolgreichen Test, pinnen Sie den Output! Weitere Tests kosten sonst Geld.
+</Warning>
+
+### Szenario 3: Bedingte Logik testen
+
+**Ziel:** IF-Node und Switch-Node korrekt testen.
+
+<Steps>
+  <Step title="True-Branch testen">
+    **Test-Daten für True-Branch:**
+    ```json
+    {
+      "userType": "premium",
+      "subscriptionActive": true,
+      "balance": 100
+    }
+    ```
+    
+    **IF-Bedingung:**
+    ```javascript
+    {{ $json.userType === 'premium' && $json.subscriptionActive === true }}
+    ```
+    
+    **Erwartetes Ergebnis:**
+    - True-Branch wird ausgeführt ✅
+    - False-Branch wird übersprungen ✅
+  </Step>
+
+  <Step title="False-Branch testen">
+    **Test-Daten für False-Branch:**
+    ```json
+    {
+      "userType": "free",
+      "subscriptionActive": false,
+      "balance": 0
+    }
+    ```
+    
+    **Erwartetes Ergebnis:**
+    - False-Branch wird ausgeführt ✅
+    - True-Branch wird übersprungen ✅
+  </Step>
+
+  <Step title="Edge Cases testen">
+    **Null/Undefined Cases:**
+    ```json
+    {
+      "userType": null,
+      "subscriptionActive": undefined,
+      "balance": null
+    }
+    ```
+    
+    **Prüfen Sie:**
+    - Wie verhält sich der Node?
+    - Werden Fehler geworfen?
+    - Ist Error-Handling implementiert?
+  </Step>
+</Steps>
+
+### Szenario 4: Daten-Transformation testen
+
+**Ziel:** Set-Node und Code-Node korrekt testen.
+
+<Steps>
+  <Step title="Input-Daten definieren">
+    ```json
+    {
+      "firstName": "Max",
+      "lastName": "Mustermann",
+      "email": "max@example.com"
+    }
+    ```
+  </Step>
+
+  <Step title="Transformation konfigurieren">
+    **Set-Node Konfiguration:**
+    - `fullName`: `{{ $json.firstName }} {{ $json.lastName }}`
+    - `greeting`: `Hallo {{ $json.firstName }}!`
+    - `email`: `{{ $json.email }}`
+  </Step>
+
+  <Step title="Output validieren">
+    ```json
+    // Erwarteter Output:
+    {
+      "fullName": "Max Mustermann",
+      "greeting": "Hallo Max!",
+      "email": "max@example.com"
+    }
+    
+    // Prüfen Sie:
+    - $json.fullName === "Max Mustermann" ✅
+    - $json.greeting.includes("Max") ✅
+    - $json.email === "max@example.com" ✅
+    ```
+  </Step>
+</Steps>
+
+## Testing-Checkliste
+
+### Vor dem Aktivieren
+
+<Check>
+- [ ] Alle Nodes wurden einzeln getestet
+- [ ] Jeder Node hat grünen Status bei Test-Execution
+- [ ] Output-Daten wurden validiert
+- [ ] Workflow wurde vollständig durchlaufen
+- [ ] Alle Branches wurden getestet (IF/Switch)
+- [ ] Error-Handling wurde getestet
+- [ ] Edge Cases wurden berücksichtigt
+- [ ] Performance wurde überprüft (Execution-Zeit < 30s)
+- [ ] Execution Logs wurden überprüft
+- [ ] Kosten wurden kalkuliert (bei KI-Nodes)
+</Check>
+
+### Node-Testing-Checkliste
+
+<Check>
+- [ ] Node führt erwartete Aktion aus
+- [ ] Output-Format ist korrekt
+- [ ] Alle erwarteten Felder sind vorhanden
+- [ ] Keine null/undefined Werte in kritischen Feldern
+- [ ] Fehlerbehandlung funktioniert
+- [ ] Timeouts sind angemessen
+- [ ] Retry-Logik funktioniert (falls implementiert)
+- [ ] Execution-Zeit ist akzeptabel
+</Check>
+
+## Best Practices für effektives Testing
+
+<CardGroup cols={2}>
+  <Card title="Testen Sie früh" icon="clock">
+    Testen Sie während der Entwicklung, nicht erst am Ende. Jeder Node sollte sofort nach Erstellung getestet werden.
+  </Card>
+  <Card title="Pinnen Sie Outputs" icon="thumbtack">
+    Sparen Sie Zeit und Geld durch Pinning von Node-Outputs. Testen Sie Downstream-Nodes ohne erneute API-Calls.
+  </Card>
+  <Card title="Realistische Test-Daten" icon="database">
+    Verwenden Sie Test-Daten, die echten Szenarien entsprechen. Vermeiden Sie zu einfache oder unrealistische Daten.
+  </Card>
+  <Card title="Edge Cases testen" icon="exclamation-triangle">
+    Testen Sie nicht nur den "Happy Path". Prüfen Sie auch null-Werte, leere Strings, sehr lange Texte.
+  </Card>
+  <Card title="Dokumentieren Sie Tests" icon="file-lines">
+    Dokumentieren Sie Test-Szenarien und Ergebnisse. Notieren Sie erwartete Outputs für zukünftige Referenz.
+  </Card>
+  <Card title="Isolation" icon="lock">
+    Isolieren Sie Tests voneinander. Jeder Test sollte unabhängig funktionieren.
+  </Card>
+</CardGroup>
+
+## Häufige Testing-Probleme
+
+<AccordionGroup>
+  <Accordion title="Node gibt keine Daten zurück" icon="question">
+    **Mögliche Ursachen:**
+    
+    1. Input-Daten fehlen oder sind falsch formatiert
+    2. Credentials sind ungültig
+    3. API-Endpoint ist falsch
+    4. Node-Konfiguration ist fehlerhaft
+    
+    **Debugging:**
+    - Prüfen Sie Input-Daten des Nodes
+    - Testen Sie API-Call in Postman
+    - Überprüfen Sie Node-Konfiguration
+    - Lesen Sie Error-Logs
+  </Accordion>
+
+  <Accordion title="Datenformat stimmt nicht" icon="arrows-rotate">
+    **Symptome:**
+    
+    - "Cannot read property 'x' of undefined"
+    - Erwartetes Feld fehlt
+    - Falscher Datentyp
+    
+    **Lösung:**
+    1. Prüfen Sie Output des vorherigen Nodes
+    2. Verwenden Sie Set-Node zur Transformation
+    3. Implementieren Sie Null-Checks: `{{ $json.field?.subfield }}`
+    4. Validieren Sie Datenformate zwischen Nodes
+  </Accordion>
+
+  <Accordion title="Workflow läuft zu langsam" icon="gauge">
+    **Symptome:**
+    
+    - Execution-Zeit > 30 Sekunden
+    - Timeouts treten auf
+    
+    **Optimierung:**
+    1. Identifizieren Sie langsame Nodes (Execution-Zeit prüfen)
+    2. Optimieren Sie API-Calls (Reduzieren Sie Datenmenge)
+    3. Nutzen Sie Caching wo möglich
+    4. Erhöhen Sie Timeouts für langsame APIs
+    5. Implementieren Sie parallele Verarbeitung
+  </Accordion>
+</AccordionGroup>
+
+## Nächste Schritte
+
+<CardGroup cols={2}>
+  <Card title="Debugging" icon="bug" href="/automate/debugging">
+    Erfahren Sie mehr über fortgeschrittene Debugging-Techniken.
+  </Card>
+  <Card title="Performance" icon="gauge" href="/automate/performance">
+    Optimieren Sie die Performance Ihrer Workflows.
+  </Card>
+  <Card title="Best Practices" icon="star" href="/automate/basics#best-practices">
+    Lernen Sie weitere Best Practices für professionelle Workflows.
+  </Card>
+  <Card title="Sicherheit" icon="shield" href="/automate/sicherheit">
+    Erfahren Sie mehr über sichere Workflow-Implementierung.
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+**Brauchen Sie Hilfe?** Unser Support-Team hilft Ihnen gerne beim Testing Ihrer Workflows. Kontaktieren Sie uns unter [support@localmind.ai](mailto:support@localmind.ai).
+</Note>

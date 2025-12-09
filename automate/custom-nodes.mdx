@@ -1,0 +1,975 @@
+---
+title: "Custom Nodes"
+description: "Erstellen Sie eigene Nodes für Automate - Erweitern Sie die Funktionalität mit benutzerdefinierten Nodes"
+icon: "puzzle-piece"
+---
+
+# Custom Nodes
+
+Custom Nodes sind selbst entwickelte Erweiterungen für Automate, die Sie in Ihre Workflows einbinden können. Sie ermöglichen es Ihnen, spezifische Integrationen, Transformationen oder Geschäftslogik zu implementieren, die nicht durch Standard-Nodes abgedeckt wird. Mit Custom Nodes erweitern Sie Automate um eigene, benutzerdefinierte Nodes, die genau auf Ihre Anforderungen zugeschnitten sind.
+
+<CardGroup cols={2}>
+  <Card title="Spezifische Integrationen" icon="plug">
+    Verbinden Sie sich mit internen Systemen oder spezialisierten APIs.
+  </Card>
+  <Card title="Wiederverwendbare Logik" icon="recycle">
+    Kapseln Sie komplexe Geschäftslogik in wiederverwendbaren Nodes.
+  </Card>
+  <Card title="Performance-Optimierung" icon="gauge">
+    Optimieren Sie spezifische Operationen für Ihre Anwendungsfälle.
+  </Card>
+  <Card title="Team-spezifische Features" icon="users">
+    Entwickeln Sie Nodes, die speziell für Ihr Team oder Ihre Organisation sind.
+  </Card>
+</CardGroup>
+
+## Wann Custom Nodes erstellen?
+
+<AccordionGroup>
+  <Accordion title="Spezifische API-Integration" icon="plug">
+    **Szenario:** Sie müssen sich mit einer internen API verbinden, die nicht in der Standard-Node-Bibliothek verfügbar ist.
+    
+    **Lösung:** Erstellen Sie einen Custom Node, der die API-Aufrufe kapselt und die Daten im Automate-Format bereitstellt.
+  </Accordion>
+
+  <Accordion title="Komplexe Daten-Transformation" icon="arrows-rotate">
+    **Szenario:** Sie benötigen spezifische Daten-Transformationen, die über Standard-Nodes hinausgehen.
+    
+    **Lösung:** Entwickeln Sie einen Transformations-Node mit Ihrer spezifischen Logik.
+  </Accordion>
+
+  <Accordion title="Wiederverwendbare Geschäftslogik" icon="recycle">
+    **Szenario:** Bestimmte Geschäftsregeln werden in vielen Workflows verwendet.
+    
+    **Lösung:** Kapseln Sie diese Logik in einem Custom Node für einfache Wiederverwendung.
+  </Accordion>
+</AccordionGroup>
+
+## Node-Architektur
+
+### Grundlegende Struktur
+
+Ein Custom Node besteht aus mehreren Komponenten:
+
+<CodeGroup>
+```typescript Node-Struktur
+interface INodeType {
+  description: INodeTypeDescription;
+  execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]>;
+  methods?: INodeTypeDescriptionMethods;
+}
+```
+
+```json package.json Beispiel
+{
+  "name": "localmind-custom-node",
+  "version": "1.0.0",
+  "description": "Custom Node für Localmind Integration",
+  "main": "index.js",
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "nodes": [
+      {
+        "node": "LocalmindAgent",
+        "sourcePath": "nodes/LocalmindAgent/LocalmindAgent.node.ts"
+      }
+    ]
+  },
+  "dependencies": {
+    "n8n-workflow": "^1.0.0"
+  }
+}
+```
+</CodeGroup>
+
+### Node-Typen
+
+<CardGroup cols={3}>
+  <Card title="Regular Node" icon="cube">
+    **Standard-Node:**
+    
+    Führt Operationen aus und gibt Daten weiter. Wird von anderen Nodes aufgerufen.
+    
+    **Beispiele:** Daten-Transformation, API-Calls, Berechnungen
+  </Card>
+  <Card title="Trigger Node" icon="play">
+    **Trigger-Node:**
+    
+    Startet Workflows automatisch basierend auf Events oder Zeitplänen.
+    
+    **Beispiele:** Webhook-Trigger, Schedule-Trigger, Event-Listener
+  </Card>
+  <Card title="Webhook Node" icon="globe">
+    **Webhook-Node:**
+    
+    Empfängt HTTP-Requests und kann Antworten senden.
+    
+    **Beispiele:** REST API Endpoints, Webhook-Listener
+  </Card>
+</CardGroup>
+
+## Entwicklungsumgebung einrichten
+
+### Voraussetzungen
+
+<Check>
+- [ ] Node.js 18+ installiert
+- [ ] TypeScript installiert (`npm install -g typescript`)
+- [ ] Git für Versionskontrolle
+- [ ] Code-Editor (VS Code empfohlen)
+</Check>
+
+### Projekt-Setup
+
+<Steps>
+  <Step title="Projekt-Verzeichnis erstellen">
+    Erstellen Sie ein neues Verzeichnis für Ihren Custom Node:
+    
+    ```bash
+    mkdir localmind-custom-node
+    cd localmind-custom-node
+    ```
+  </Step>
+
+  <Step title="package.json initialisieren">
+    Erstellen Sie eine `package.json` Datei:
+    
+    ```bash
+    npm init -y
+    ```
+    
+    Bearbeiten Sie die `package.json`:
+    
+    <CodeGroup>
+    ```json package.json
+    {
+      "name": "localmind-custom-node",
+      "version": "1.0.0",
+      "description": "Custom Nodes für Localmind Automate",
+      "main": "index.js",
+      "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch"
+      },
+      "keywords": ["n8n", "n8n-node", "localmind"],
+      "author": "Localmind",
+      "license": "MIT",
+      "n8n": {
+        "n8nNodesApiVersion": 1,
+        "nodes": [
+          {
+            "node": "LocalmindAgent",
+            "sourcePath": "nodes/LocalmindAgent/LocalmindAgent.node.ts"
+          }
+        ]
+      },
+      "dependencies": {
+        "n8n-workflow": "^1.0.0"
+      },
+      "devDependencies": {
+        "@types/node": "^20.0.0",
+        "typescript": "^5.0.0"
+      }
+    }
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="TypeScript konfigurieren">
+    Erstellen Sie `tsconfig.json`:
+    
+    <CodeGroup>
+    ```json tsconfig.json
+    {
+      "compilerOptions": {
+        "module": "commonjs",
+        "target": "ES2020",
+        "lib": ["ES2020"],
+        "declaration": true,
+        "outDir": "./dist",
+        "rootDir": "./",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true
+      },
+      "include": ["nodes/**/*"],
+      "exclude": ["node_modules", "dist"]
+    }
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Abhängigkeiten installieren">
+    Installieren Sie die benötigten Pakete:
+    
+    ```bash
+    npm install
+    ```
+  </Step>
+</Steps>
+
+## Erster Custom Node erstellen
+
+### Beispiel: Localmind Agent Node
+
+Lassen Sie uns einen einfachen Custom Node erstellen, der Localmind-Agenten aufruft:
+
+<CodeGroup>
+```typescript nodes/LocalmindAgent/LocalmindAgent.node.ts
+import {
+  IExecuteFunctions,
+  INodeExecutionData,
+  INodeType,
+  INodeTypeDescription,
+  NodePropertyTypes,
+} from 'n8n-workflow';
+
+export class LocalmindAgent implements INodeType {
+  description: INodeTypeDescription = {
+    displayName: 'Localmind Agent',
+    name: 'localmindAgent',
+    icon: 'file:localmind.svg',
+    group: ['transform'],
+    version: 1,
+    subtitle: '={{$parameter["operation"]}}',
+    description: 'Ruft einen Localmind-Agenten auf',
+    defaults: {
+      name: 'Localmind Agent',
+    },
+    inputs: ['main'],
+    outputs: ['main'],
+    credentials: [
+      {
+        name: 'localmindApi',
+        required: true,
+      },
+    ],
+    properties: [
+      {
+        displayName: 'Agent ID',
+        name: 'agentId',
+        type: 'string',
+        required: true,
+        default: '',
+        description: 'Die ID des Localmind-Agenten',
+      },
+      {
+        displayName: 'Input',
+        name: 'input',
+        type: 'string',
+        required: true,
+        default: '',
+        description: 'Der Input-Text für den Agenten',
+      },
+      {
+        displayName: 'Temperature',
+        name: 'temperature',
+        type: 'number',
+        typeOptions: {
+          minValue: 0,
+          maxValue: 2,
+          numberStepSize: 0.1,
+        },
+        default: 0.7,
+        description: 'Die Temperature für die Agent-Antwort',
+      },
+      {
+        displayName: 'Max Tokens',
+        name: 'maxTokens',
+        type: 'number',
+        typeOptions: {
+          minValue: 1,
+          maxValue: 4000,
+        },
+        default: 500,
+        description: 'Maximale Anzahl von Tokens in der Antwort',
+      },
+    ],
+  };
+
+  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+    const items = this.getInputData();
+    const returnData: INodeExecutionData[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const agentId = this.getNodeParameter('agentId', i) as string;
+      const input = this.getNodeParameter('input', i) as string;
+      const temperature = this.getNodeParameter('temperature', i) as number;
+      const maxTokens = this.getNodeParameter('maxTokens', i) as number;
+
+      const credentials = await this.getCredentials('localmindApi');
+      const apiKey = credentials.apiKey as string;
+
+      // API-Call zu Localmind
+      const response = await this.helpers.httpRequest({
+        method: 'POST',
+        url: 'https://api.localmind.ai/v1/agents/execute',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: {
+          agentId,
+          input,
+          options: {
+            temperature,
+            maxTokens,
+          },
+        },
+      });
+
+      returnData.push({
+        json: {
+          agentId,
+          input,
+          response: response.output,
+          usage: response.usage,
+        },
+      });
+    }
+
+    return [returnData];
+  }
+}
+```
+</CodeGroup>
+
+## Node-Konfiguration
+
+### Properties definieren
+
+Properties sind die konfigurierbaren Parameter Ihres Nodes:
+
+<AccordionGroup>
+  <Accordion title="String Properties" icon="text">
+    **Text-Eingaben:**
+    
+    ```typescript
+    {
+      displayName: 'Agent ID',
+      name: 'agentId',
+      type: 'string',
+      required: true,
+      default: '',
+      description: 'Die ID des Localmind-Agenten',
+    }
+    ```
+    
+    **Optionen:**
+    - `required`: Ob das Feld erforderlich ist
+    - `default`: Standardwert
+    - `placeholder`: Platzhalter-Text
+  </Accordion>
+
+  <Accordion title="Number Properties" icon="hashtag">
+    **Zahlen-Eingaben:**
+    
+    ```typescript
+    {
+      displayName: 'Temperature',
+      name: 'temperature',
+      type: 'number',
+      typeOptions: {
+        minValue: 0,
+        maxValue: 2,
+        numberStepSize: 0.1,
+      },
+      default: 0.7,
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Options Properties" icon="list">
+    **Dropdown-Auswahl:**
+    
+    ```typescript
+    {
+      displayName: 'Operation',
+      name: 'operation',
+      type: 'options',
+      options: [
+        {
+          name: 'Analyze',
+          value: 'analyze',
+        },
+        {
+          name: 'Transform',
+          value: 'transform',
+        },
+      ],
+      default: 'analyze',
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Collection Properties" icon="layer-group">
+    **Komplexe Objekte:**
+    
+    ```typescript
+    {
+      displayName: 'Parameters',
+      name: 'parameters',
+      type: 'collection',
+      placeholder: 'Add Parameter',
+      default: {},
+      options: [
+        {
+          displayName: 'Key',
+          name: 'key',
+          type: 'string',
+        },
+        {
+          displayName: 'Value',
+          name: 'value',
+          type: 'string',
+        },
+      ],
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Credentials konfigurieren
+
+Für API-Authentifizierung definieren Sie Credentials:
+
+<CodeGroup>
+```typescript credentials/localmindApi.credentials.ts
+import {
+  ICredentialType,
+  INodeProperties,
+} from 'n8n-workflow';
+
+export class LocalmindApi implements ICredentialType {
+  name = 'localmindApi';
+  displayName = 'Localmind API';
+  properties: INodeProperties[] = [
+    {
+      displayName: 'API Key',
+      name: 'apiKey',
+      type: 'string',
+      typeOptions: {
+        password: true,
+      },
+      default: '',
+      required: true,
+    },
+    {
+      displayName: 'Base URL',
+      name: 'baseUrl',
+      type: 'string',
+      default: 'https://api.localmind.ai',
+      required: true,
+    },
+  ];
+}
+```
+</CodeGroup>
+
+## Node-Typen im Detail
+
+### Regular Node
+
+Ein Standard-Node, der Daten verarbeitet:
+
+<CodeGroup>
+```typescript Regular Node Struktur
+export class MyCustomNode implements INodeType {
+  description: INodeTypeDescription = {
+    displayName: 'My Custom Node',
+    name: 'myCustomNode',
+    group: ['transform'],
+    version: 1,
+    description: 'Beschreibung des Nodes',
+    defaults: {
+      name: 'My Custom Node',
+    },
+    inputs: ['main'],  // Anzahl der Inputs
+    outputs: ['main'], // Anzahl der Outputs
+    properties: [
+      // Node Properties hier
+    ],
+  };
+
+  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+    // Node-Logik hier
+    return [returnData];
+  }
+}
+```
+</CodeGroup>
+
+### Trigger Node
+
+Ein Node, der Workflows startet:
+
+<CodeGroup>
+```typescript Trigger Node Struktur
+export class MyTriggerNode implements INodeType {
+  description: INodeTypeDescription = {
+    displayName: 'My Trigger',
+    name: 'myTrigger',
+    group: ['trigger'],
+    version: 1,
+    description: 'Startet Workflow bei Event',
+    defaults: {
+      name: 'My Trigger',
+    },
+    inputs: [],
+    outputs: ['main'],
+    properties: [
+      // Trigger-spezifische Properties
+    ],
+  };
+
+  async trigger(this: ITriggerFunctions): Promise<ITriggerResponse> {
+    // Trigger-Logik hier
+    return {
+      close: async () => {
+        // Cleanup
+      },
+      main: async () => {
+        // Event-Handling
+      },
+    };
+  }
+}
+```
+</CodeGroup>
+
+### Webhook Node
+
+Ein Node, der HTTP-Requests empfängt:
+
+<CodeGroup>
+```typescript Webhook Node Struktur
+export class MyWebhookNode implements INodeType {
+  description: INodeTypeDescription = {
+    displayName: 'My Webhook',
+    name: 'myWebhook',
+    group: ['trigger'],
+    version: 1,
+    description: 'Empfängt HTTP-Requests',
+    defaults: {
+      name: 'My Webhook',
+    },
+    inputs: [],
+    outputs: ['main'],
+    webhook: {
+      httpMethod: 'POST',
+      path: 'my-webhook',
+    },
+    properties: [
+      // Webhook-spezifische Properties
+    ],
+  };
+
+  async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
+    const req = this.getRequestObject();
+    const res = this.getResponseObject();
+
+    return {
+      workflowData: [
+        [
+          {
+            json: req.body,
+          },
+        ],
+      ],
+    };
+  }
+}
+```
+</CodeGroup>
+
+## Datenverarbeitung
+
+### Input-Daten lesen
+
+<CodeGroup>
+```typescript Input-Daten verarbeiten
+async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+  const items = this.getInputData();
+  const returnData: INodeExecutionData[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    // Zugriff auf einzelnes Item
+    const item = items[i];
+    const data = item.json;
+
+    // Parameter aus Node-Konfiguration lesen
+    const agentId = this.getNodeParameter('agentId', i) as string;
+    
+    // Verarbeitung...
+  }
+
+  return [returnData];
+}
+```
+</CodeGroup>
+
+### Output-Daten erstellen
+
+<CodeGroup>
+```typescript Output-Daten formatieren
+// Einfaches Output
+returnData.push({
+  json: {
+    result: 'success',
+    data: processedData,
+  },
+});
+
+// Mit Binary-Daten
+returnData.push({
+  json: {
+    filename: 'result.json',
+  },
+  binary: {
+    data: {
+      data: Buffer.from(JSON.stringify(data)),
+      mimeType: 'application/json',
+    },
+  },
+});
+```
+</CodeGroup>
+
+## Error Handling
+
+### Fehlerbehandlung implementieren
+
+<CodeGroup>
+```typescript Error Handling
+async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+  const items = this.getInputData();
+  const returnData: INodeExecutionData[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    try {
+      // Node-Logik
+      const result = await processData();
+      
+      returnData.push({
+        json: result,
+      });
+    } catch (error) {
+      // Fehlerbehandlung
+      if (this.continueOnFail()) {
+        returnData.push({
+          json: {
+            error: error.message,
+          },
+        });
+        continue;
+      }
+      
+      // Fehler werfen, wenn continueOnFail nicht aktiviert
+      throw error;
+    }
+  }
+
+  return [returnData];
+}
+```
+</CodeGroup>
+
+## Testing
+
+### Node testen
+
+<Steps>
+  <Step title="Lokales Testing">
+    1. Kompilieren Sie Ihren Node:
+    
+    ```bash
+    npm run build
+    ```
+    
+    2. Testen Sie den Node lokal mit Automate Dev-Modus
+  </Step>
+
+  <Step title="Unit Tests">
+    Erstellen Sie Unit Tests für Ihre Node-Logik:
+    
+    <CodeGroup>
+    ```typescript test/LocalmindAgent.test.ts
+    import { LocalmindAgent } from '../nodes/LocalmindAgent/LocalmindAgent.node';
+    
+    describe('LocalmindAgent', () => {
+      it('should execute successfully', async () => {
+        // Test-Logik hier
+      });
+    });
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Integration Tests">
+    Testen Sie den Node in echten Workflows:
+    
+    - Erstellen Sie Test-Workflows
+    - Verwenden Sie Test-Daten
+    - Überprüfen Sie Outputs
+  </Step>
+</Steps>
+
+## Deployment
+
+### Node verpacken
+
+<Steps>
+  <Step title="Build erstellen">
+    Kompilieren Sie TypeScript zu JavaScript:
+    
+    ```bash
+    npm run build
+    ```
+  </Step>
+
+  <Step title="Package erstellen">
+    Erstellen Sie ein npm-Package:
+    
+    ```bash
+    npm pack
+    ```
+    
+    Dies erstellt eine `.tgz` Datei, die installiert werden kann.
+  </Step>
+
+  <Step title="Node installieren">
+    Installieren Sie den Node in Automate:
+    
+    ```bash
+    # In Automate-Verzeichnis
+    npm install /path/to/localmind-custom-node-1.0.0.tgz
+    ```
+  </Step>
+</Steps>
+
+### Node verteilen
+
+<CardGroup cols={2}>
+  <Card title="Private npm Registry" icon="box">
+    Veröffentlichen Sie in einer privaten npm Registry für Ihr Team.
+  </Card>
+  <Card title="Git Repository" icon="code-branch">
+    Verteilen Sie über Git und installieren direkt aus dem Repository.
+  </Card>
+  <Card title="Lokale Installation" icon="folder">
+    Installieren Sie lokal für Entwicklung und Testing.
+  </Card>
+  <Card title="Docker Image" icon="docker">
+    Packen Sie in Docker für Container-Deployments.
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Klare Dokumentation" icon="file-lines">
+    Dokumentieren Sie jeden Property und jede Funktion klar und verständlich.
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation">
+    Implementieren Sie umfassendes Error Handling für alle Fehlerfälle.
+  </Card>
+  <Card title="Performance" icon="gauge">
+    Optimieren Sie für Performance - vermeiden Sie unnötige API-Calls.
+  </Card>
+  <Card title="Wiederverwendbarkeit" icon="recycle">
+    Designen Sie Nodes für Wiederverwendbarkeit in verschiedenen Kontexten.
+  </Card>
+  <Card title="Testing" icon="flask">
+    Schreiben Sie umfassende Tests für Ihre Nodes.
+  </Card>
+  <Card title="Versionierung" icon="code-branch">
+    Verwenden Sie semantische Versionierung für Ihre Nodes.
+  </Card>
+</CardGroup>
+
+## Beispiel: Kompletter Custom Node
+
+Hier ist ein vollständiges Beispiel eines Custom Nodes:
+
+<CodeGroup>
+```typescript nodes/DataTransform/DataTransform.node.ts
+import {
+  IExecuteFunctions,
+  INodeExecutionData,
+  INodeType,
+  INodeTypeDescription,
+} from 'n8n-workflow';
+
+export class DataTransform implements INodeType {
+  description: INodeTypeDescription = {
+    displayName: 'Data Transform',
+    name: 'dataTransform',
+    icon: 'file:transform.svg',
+    group: ['transform'],
+    version: 1,
+    description: 'Transformiert Daten nach definierten Regeln',
+    defaults: {
+      name: 'Data Transform',
+    },
+    inputs: ['main'],
+    outputs: ['main'],
+    properties: [
+      {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        options: [
+          {
+            name: 'Uppercase',
+            value: 'uppercase',
+          },
+          {
+            name: 'Lowercase',
+            value: 'lowercase',
+          },
+          {
+            name: 'Trim',
+            value: 'trim',
+          },
+        ],
+        default: 'uppercase',
+        description: 'Die Transformations-Operation',
+      },
+      {
+        displayName: 'Field Name',
+        name: 'fieldName',
+        type: 'string',
+        default: 'text',
+        description: 'Das zu transformierende Feld',
+      },
+    ],
+  };
+
+  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+    const items = this.getInputData();
+    const returnData: INodeExecutionData[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const operation = this.getNodeParameter('operation', i) as string;
+      const fieldName = this.getNodeParameter('fieldName', i) as string;
+      const item = items[i];
+      const value = item.json[fieldName] as string;
+
+      let transformedValue: string;
+
+      switch (operation) {
+        case 'uppercase':
+          transformedValue = value.toUpperCase();
+          break;
+        case 'lowercase':
+          transformedValue = value.toLowerCase();
+          break;
+        case 'trim':
+          transformedValue = value.trim();
+          break;
+        default:
+          transformedValue = value;
+      }
+
+      returnData.push({
+        json: {
+          ...item.json,
+          [fieldName]: transformedValue,
+        },
+      });
+    }
+
+    return [returnData];
+  }
+}
+```
+</CodeGroup>
+
+## Integration mit Localmind
+
+### Localmind-spezifische Features
+
+<AccordionGroup>
+  <Accordion title="Agent-Integration" icon="robot">
+    **Agenten direkt aufrufen:**
+    
+    Custom Nodes können Localmind-Agenten direkt integrieren:
+    
+    ```typescript
+    const agentResponse = await callLocalmindAgent({
+      agentId: 'agent_123',
+      input: data.text,
+      context: data.context,
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Datenbank-Zugriff" icon="database">
+    **Auf Localmind-Datenbanken zugreifen:**
+    
+    Nodes können auf Ihre Localmind-Datenbanken zugreifen:
+    
+    ```typescript
+    const result = await queryLocalmindDatabase({
+      query: 'SELECT * FROM users WHERE id = ?',
+      params: [userId],
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Häufige Probleme
+
+<AccordionGroup>
+  <Accordion title="Node wird nicht erkannt" icon="triangle-exclamation">
+    **Problem:** Custom Node erscheint nicht in der Node-Liste
+    
+    **Lösung:**
+    - Überprüfen Sie `package.json` Konfiguration
+    - Stellen Sie sicher, dass der Node kompiliert wurde
+    - Neustarten Sie Automate nach Installation
+  </Accordion>
+
+  <Accordion title="TypeScript-Fehler" icon="code">
+    **Problem:** TypeScript-Kompilierung schlägt fehl
+    
+    **Lösung:**
+    - Überprüfen Sie `tsconfig.json` Konfiguration
+    - Stellen Sie sicher, dass alle Dependencies installiert sind
+    - Überprüfen Sie Type-Definitionen
+  </Accordion>
+
+  <Accordion title="Credentials funktionieren nicht" icon="key">
+    **Problem:** Credentials werden nicht korrekt geladen
+    
+    **Lösung:**
+    - Überprüfen Sie Credential-Definition
+    - Stellen Sie sicher, dass Credentials korrekt gespeichert sind
+    - Testen Sie Credential-Zugriff im Node
+  </Accordion>
+</AccordionGroup>
+
+## Ressourcen
+
+<CardGroup cols={2}>
+  <Card title="n8n Dokumentation" icon="book" href="https://docs.n8n.io/integrations/creating-nodes/">
+    Offizielle n8n Dokumentation für Custom Nodes
+  </Card>
+  <Card title="TypeScript Guide" icon="code" href="https://www.typescriptlang.org/docs/">
+    TypeScript Dokumentation für Node-Entwicklung
+  </Card>
+  <Card title="Node.js Best Practices" icon="star" href="https://github.com/goldbergyoni/nodebestpractices">
+    Best Practices für Node.js Entwicklung
+  </Card>
+  <Card title="Localmind API Docs" icon="code" href="/administration-monitoring/api">
+    Localmind API Dokumentation für Integrationen
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+**Brauchen Sie Hilfe?** Unser Entwickler-Team unterstützt Sie gerne bei der Erstellung von Custom Nodes. Kontaktieren Sie uns unter [dev@localmind.ai](mailto:dev@localmind.ai).
+</Note>

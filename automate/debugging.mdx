@@ -1,0 +1,335 @@
+---
+title: "Debugging"
+description: "Debugging-Techniken und Fehlerbehebung für Automate-Workflows"
+icon: "bug"
+---
+
+# Debugging
+
+Erfahren Sie, wie Sie Probleme in Ihren Automate-Workflows effektiv debuggen und beheben.
+
+## Debugging-Grundlagen
+
+<CardGroup cols={2}>
+  <Card title="Systematisch vorgehen" icon="list-check">
+    Gehen Sie methodisch vor, um Probleme zu identifizieren.
+  </Card>
+  <Card title="Logs nutzen" icon="file-lines">
+    Execution Logs sind Ihre beste Quelle für Debugging-Informationen.
+  </Card>
+  <Card title="Isolation" icon="filter">
+    Isolieren Sie das Problem, indem Sie einzelne Nodes testen.
+  </Card>
+  <Card title="Dokumentation" icon="book">
+    Dokumentieren Sie gefundene Probleme und Lösungen.
+  </Card>
+</CardGroup>
+
+## Execution Logs
+
+### Logs analysieren
+
+<AccordionGroup>
+  <Accordion title="Logs öffnen" icon="folder-open">
+    **So öffnen Sie Execution Logs:**
+    
+    1. Navigieren Sie zum **"Executions"** Tab
+    2. Wählen Sie eine Execution aus
+    3. Klicken Sie auf die Execution, um Details zu sehen
+    4. Öffnen Sie jeden Node, um Input/Output zu sehen
+    
+    <Tip>
+      Filtern Sie nach fehlgeschlagenen Executions für schnelleres Debugging.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Node-Details prüfen" icon="eye">
+    **Was Sie in Logs sehen:**
+    
+    - **Input:** Daten, die der Node empfangen hat
+    - **Output:** Daten, die der Node produziert hat
+    - **Execution Time:** Wie lange der Node gebraucht hat
+    - **Status:** Erfolg oder Fehler
+    - **Error Messages:** Detaillierte Fehlermeldungen
+  </Accordion>
+
+  <Accordion title="Fehler identifizieren" icon="triangle-exclamation">
+    **Häufige Fehler-Indikatoren:**
+    
+    - Rote Nodes (fehlgeschlagen)
+    - Gelbe Nodes (Warnungen)
+    - Fehlende Verbindungen
+    - Timeout-Meldungen
+    - API-Fehler (4xx, 5xx)
+  </Accordion>
+</AccordionGroup>
+
+## Häufige Probleme und Lösungen
+
+### Problem 1: Workflow läuft nicht
+
+<AccordionGroup>
+  <Accordion title="Workflow ist nicht aktiviert" icon="toggle-off">
+    **Symptom:** Workflow wird nicht ausgeführt
+    
+    **Lösung:**
+    1. Überprüfen Sie den "Active" Toggle oben rechts
+    2. Stellen Sie sicher, dass er auf "Active" steht
+    3. Prüfen Sie, ob der Trigger korrekt konfiguriert ist
+  </Accordion>
+
+  <Accordion title="Trigger nicht konfiguriert" icon="play">
+    **Symptom:** Workflow startet nicht automatisch
+    
+    **Lösung:**
+    1. Überprüfen Sie Trigger-Konfiguration
+    2. Testen Sie Trigger manuell
+    3. Prüfen Sie Credentials für Trigger (z.B. IMAP)
+    4. Validiere Webhook-URL und Secret
+  </Accordion>
+
+  <Accordion title="Credentials fehlen" icon="key">
+    **Symptom:** Authentifizierung schlägt fehl
+    
+    **Lösung:**
+    1. Überprüfen Sie Credentials in Node-Einstellungen
+    2. Testen Sie Credentials einzeln
+    3. Stellen Sie sicher, dass Credentials nicht abgelaufen sind
+    4. Überprüfen Sie Environment Variables
+  </Accordion>
+</AccordionGroup>
+
+### Problem 2: Daten werden nicht korrekt übergeben
+
+<AccordionGroup>
+  <Accordion title="Falsche Expression-Syntax" icon="code">
+    **Symptom:** Node erhält keine oder falsche Daten
+    
+    **Lösung:**
+    1. Überprüfen Sie Expression-Syntax: `{{ $json.fieldName }}`
+    2. Prüfen Sie Feldnamen (Case-Sensitive!)
+    3. Verwenden Sie Expression-Editor für Validierung
+    4. Testen Sie Expressions mit "Execute Node"
+    
+    <CodeGroup>
+    ```javascript Korrekte Syntax
+    // Zugriff auf vorherige Node-Daten
+    {{ $json.email }}
+    {{ $json.user.name }}
+    
+    // Zugriff auf spezifischen Node
+    {{ $('Node Name').item.json.field }}
+    
+    // Funktionen
+    {{ $json.text.toUpperCase() }}
+    {{ $now.toISO() }}
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Datenformat-Inkompatibilität" icon="arrows-rotate">
+    **Symptom:** Node erwartet anderes Format
+    
+    **Lösung:**
+    1. Überprüfen Sie Datenformate zwischen Nodes
+    2. Verwenden Sie "Set" Nodes zur Transformation
+    3. Validieren Sie mit JSON Schema
+    4. Prüfen Sie Execution Logs für tatsächliche Datenformate
+  </Accordion>
+
+  <Accordion title="Node-Reihenfolge falsch" icon="arrow-right">
+    **Symptom:** Node greift auf Daten zu, die noch nicht existieren
+    
+    **Lösung:**
+    1. Überprüfen Sie Workflow-Struktur
+    2. Stellen Sie sicher, dass Daten-Nodes vor Verwendungs-Nodes kommen
+    3. Verwenden Sie "Set" Nodes zur Datenvorbereitung
+  </Accordion>
+</AccordionGroup>
+
+### Problem 3: Agent gibt keine Antwort
+
+<AccordionGroup>
+  <Accordion title="Agent-ID falsch" icon="robot">
+    **Symptom:** Agent wird nicht gefunden
+    
+    **Lösung:**
+    1. Überprüfen Sie Agent-ID im Node
+    2. Stellen Sie sicher, dass Agent existiert und verfügbar ist
+    3. Prüfen Sie Agent-Berechtigungen
+    4. Testen Sie Agent direkt im Agent-Interface
+  </Accordion>
+
+  <Accordion title="Prompt-Format ungültig" icon="pen-fancy">
+    **Symptom:** Agent gibt Fehler zurück
+    
+    **Lösung:**
+    1. Überprüfen Sie Prompt-Syntax
+    2. Testen Sie Prompt direkt im Agent-Interface
+    3. Validiere Prompt-Länge und Format
+    4. Prüfen Sie, ob alle Variablen korrekt eingesetzt werden
+  </Accordion>
+
+  <Accordion title="API-Limits erreicht" icon="gauge">
+    **Symptom:** Agent-Aufrufe schlagen fehl
+    
+    **Lösung:**
+    1. Überprüfen Sie API-Quotas
+    2. Prüfen Sie Rate Limits
+    3. Implementieren Sie Retry-Logik mit Backoff
+    4. Kontaktieren Sie Support bei anhaltenden Problemen
+  </Accordion>
+</AccordionGroup>
+
+## Debugging-Techniken
+
+### 1. Node-Level Debugging
+
+**Testen Sie jeden Node einzeln:**
+
+<Steps>
+  <Step title="Node isolieren">
+    1. Öffnen Sie den Node
+    2. Verwenden Sie Test-Daten
+    3. Klicken Sie auf **"Execute Node"**
+  </Step>
+
+  <Step title="Input prüfen">
+    1. Überprüfen Sie Input-Daten
+    2. Validiere Datenformat
+    3. Prüfen Sie auf fehlende Felder
+  </Step>
+
+  <Step title="Output prüfen">
+    1. Überprüfen Sie Output-Daten
+    2. Validiere erwartetes Format
+    3. Prüfen Sie auf unerwartete Werte
+  </Step>
+</Steps>
+
+### 2. Workflow-Level Debugging
+
+**Debuggen Sie den gesamten Workflow:**
+
+<CodeGroup>
+```json Debugging-Strategie
+{
+  "step1": "Aktiviere 'Save Data on Error'",
+  "step2": "Führe Workflow mit Test-Daten aus",
+  "step3": "Prüfe Execution Logs",
+  "step4": "Identifiziere fehlgeschlagene Nodes",
+  "step5": "Debugge jeden fehlgeschlagenen Node",
+  "step6": "Teste Fixes einzeln",
+  "step7": "Führe vollständigen Workflow-Test durch"
+}
+```
+</CodeGroup>
+
+### 3. Logging hinzufügen
+
+**Fügen Sie Debug-Logs hinzu:**
+
+<CodeGroup>
+```javascript Debug-Logging
+// Log wichtige Werte
+console.log('User ID:', {{ $json.userId }});
+console.log('Email:', {{ $json.email }});
+console.log('Processing step:', 'email-sent');
+
+// Log in Set Node
+{
+  "debug": {
+    "step": "before-agent-call",
+    "data": "={{ $json }}",
+    "timestamp": "={{ $now.toISO() }}"
+  }
+}
+```
+</CodeGroup>
+
+## Debugging-Tools
+
+### Automate Debugging-Features
+
+<CardGroup cols={2}>
+  <Card title="Execute Node" icon="play">
+    Testen Sie einzelne Nodes mit Test-Daten.
+  </Card>
+  <Card title="Execution Logs" icon="file-lines">
+    Detaillierte Logs für jede Execution.
+  </Card>
+  <Card title="Save Data on Error" icon="floppy-disk">
+    Speichert Daten auch bei Fehlern für Debugging.
+  </Card>
+  <Card title="Expression Editor" icon="code">
+    Validiert Expressions vor Ausführung.
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Systematisch vorgehen" icon="list-check">
+    Gehen Sie Schritt für Schritt vor, nicht zufällig.
+  </Card>
+  <Card title="Logs nutzen" icon="file-lines">
+    Execution Logs sind Ihre beste Informationsquelle.
+  </Card>
+  <Card title="Isolation" icon="filter">
+    Isolieren Sie Probleme durch Node-Level-Testing.
+  </Card>
+  <Card title="Dokumentation" icon="book">
+    Dokumentieren Sie Probleme und Lösungen.
+  </Card>
+</CardGroup>
+
+## Debugging-Checkliste
+
+<Check>
+- [ ] Execution Logs wurden überprüft
+- [ ] Fehlgeschlagene Nodes wurden identifiziert
+- [ ] Jeder fehlgeschlagene Node wurde einzeln getestet
+- [ ] Input/Output-Daten wurden validiert
+- [ ] Expressions wurden auf Syntax-Fehler geprüft
+- [ ] Datenformate wurden überprüft
+- [ ] Credentials wurden validiert
+- [ ] Error Messages wurden gelesen und verstanden
+</Check>
+
+## Häufige Fehlermeldungen
+
+<AccordionGroup>
+  <Accordion title="Timeout Error" icon="clock">
+    **Fehler:** "Request timeout after 30s"
+    
+    **Lösung:**
+    - Erhöhen Sie Timeout-Wert
+    - Optimieren Sie API-Call
+    - Implementieren Sie Retry-Logik
+  </Accordion>
+
+  <Accordion title="Authentication Error" icon="key">
+    **Fehler:** "401 Unauthorized"
+    
+    **Lösung:**
+    - Überprüfen Sie Credentials
+    - Prüfen Sie Token-Ablauf
+    - Validiere API-Key Format
+  </Accordion>
+
+  <Accordion title="Data Format Error" icon="arrows-rotate">
+    **Fehler:** "Invalid data format"
+    
+    **Lösung:**
+    - Überprüfen Sie Datenformat
+    - Verwenden Sie Set Node zur Transformation
+    - Validiere mit JSON Schema
+  </Accordion>
+</AccordionGroup>
+
+---
+
+<Note>
+**Weiterführende Themen:** Lesen Sie auch unsere Seiten zu [Testing](/automate/testing) und [Performance](/automate/performance) für weitere Debugging-Techniken.
+</Note>
+

@@ -25,6 +25,9 @@ You are an AI writing assistant specialized in creating exceptional technical do
 - Provide expected outcomes for each major step
 - Use descriptive, keyword-rich headings for navigation and SEO
 - Group related information logically with clear section breaks
+- Our Company is named "Localmind" and the n8n integration is called "Automate"
+- Structure the Pages so that Readers have a flawless experience with the optimal amount of information without getting cluttered
+- always choose the best documentation approach for each individual section
 
 ### User-centered approach
 
@@ -33,6 +36,12 @@ You are an AI writing assistant specialized in creating exceptional technical do
 - Include troubleshooting for likely failure points
 - Write for scannability with clear headings, lists, and white space
 - Include verification steps to confirm success
+
+### API documentation structure rules
+
+- Every endpoint page must include: purpose, auth requirements, method and URL, parameters with types and constraints, request example, response example, and common errors
+- All API errors must follow a documented, consistent schema and link to a central “Errors” reference
+- 
 
 ## Mintlify component reference
 

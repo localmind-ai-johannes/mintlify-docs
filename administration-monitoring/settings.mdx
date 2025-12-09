@@ -1,0 +1,797 @@
+---
+title: "Settings"
+description: "Automate-Einstellungen und Konfiguration - Workflow-Settings, Environment Variables, Credentials und mehr"
+icon: "gear"
+---
+
+# Settings & Konfiguration
+
+Konfigurieren Sie Automate nach Ihren Anforderungen. Diese Seite beschreibt alle verfügbaren Einstellungen für Workflows, System-Konfiguration, Credentials und mehr. Automate bietet umfassende Konfigurationsmöglichkeiten auf verschiedenen Ebenen:
+
+<CardGroup cols={3}>
+  <Card title="Workflow-Settings" icon="diagram-project">
+    Einstellungen für einzelne Workflows
+  </Card>
+  <Card title="System-Settings" icon="server">
+    Globale System-Konfiguration
+  </Card>
+  <Card title="Credentials" icon="key">
+    Verwaltung von API-Keys und Zugangsdaten
+  </Card>
+  <Card title="Environment Variables" icon="code">
+    Umgebungsvariablen für Konfiguration
+  </Card>
+  <Card title="Execution Settings" icon="play">
+    Einstellungen für Workflow-Ausführungen
+  </Card>
+  <Card title="Performance" icon="gauge">
+    Performance-Optimierungen
+  </Card>
+</CardGroup>
+
+## Workflow-Einstellungen
+
+### Execution Settings
+
+Konfigurieren Sie, wie Workflows ausgeführt werden:
+
+<AccordionGroup>
+  <Accordion title="Save Data on Error" icon="triangle-exclamation">
+    **Optionen:**
+    - `all`: Speichert alle Daten bei Fehlern
+    - `none`: Speichert keine Daten bei Fehlern
+    
+    **Empfehlung:** `all` für Debugging, `none` für Produktion mit sensiblen Daten
+    
+    <CodeGroup>
+    ```json Workflow Settings
+    {
+      "settings": {
+        "saveDataErrorExecution": "all"
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Save Data on Success" icon="check">
+    **Optionen:**
+    - `all`: Speichert alle Daten bei erfolgreicher Ausführung
+    - `none`: Speichert keine Daten bei erfolgreicher Ausführung
+    
+    **Empfehlung:** `all` für Debugging, `none` für Produktion um Speicherplatz zu sparen
+    
+    <CodeGroup>
+    ```json Workflow Settings
+    {
+      "settings": {
+        "saveDataSuccessExecution": "all"
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Save Manual Executions" icon="hand-pointer">
+    **Optionen:**
+    - `true`: Speichert manuelle Ausführungen
+    - `false`: Speichert keine manuellen Ausführungen
+    
+    **Empfehlung:** `true` für Testing, `false` für Produktion
+    
+    <CodeGroup>
+    ```json Workflow Settings
+    {
+      "settings": {
+        "saveManualExecutions": true
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Execution Timeout" icon="clock">
+    **Beschreibung:** Maximale Ausführungszeit für einen Workflow
+    
+    **Standard:** 3600 Sekunden (1 Stunde)
+    
+    **Empfehlung:** Anpassen basierend auf Workflow-Komplexität
+    
+    <CodeGroup>
+    ```json Workflow Settings
+    {
+      "settings": {
+        "executionTimeout": 3600
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+</AccordionGroup>
+
+### Error Handling
+
+Konfigurieren Sie, wie Fehler behandelt werden:
+
+<CardGroup cols={2}>
+  <Card title="Error Workflow" icon="exclamation-triangle">
+    **Beschreibung:** Workflow, der bei Fehlern ausgeführt wird
+    
+    **Verwendung:** Automatische Fehlerbehandlung und Benachrichtigung
+    
+    <CodeGroup>
+    ```json Error Workflow Setting
+    {
+      "settings": {
+        "errorWorkflow": "workflow_error_handler_id"
+      }
+    }
+    ```
+    </CodeGroup>
+  </Card>
+  <Card title="Continue on Fail" icon="arrow-right">
+    **Beschreibung:** Workflow fortfahren auch wenn einzelne Nodes fehlschlagen
+    
+    **Standard:** `false`
+    
+    **Verwendung:** Aktivieren für Workflows, die auch bei Teilfehlern fortgesetzt werden sollen
+  </Card>
+</CardGroup>
+
+## Environment Variables
+
+### Übersicht
+
+Environment Variables ermöglichen es, Konfigurationswerte zentral zu verwalten und zwischen verschiedenen Umgebungen zu unterscheiden.
+
+<CardGroup cols={2}>
+  <Card title="Zentrale Verwaltung" icon="folder">
+    Alle Konfigurationswerte an einem Ort
+  </Card>
+  <Card title="Umgebungs-spezifisch" icon="server">
+    Verschiedene Werte für Dev, Staging, Production
+  </Card>
+  <Card title="Sicherheit" icon="lock">
+    Sensible Daten nicht im Workflow-Code
+  </Card>
+  <Card title="Einfache Updates" icon="arrows-rotate">
+    Werte ändern ohne Workflow-Änderungen
+  </Card>
+</CardGroup>
+
+### Environment Variables erstellen
+
+<Steps>
+  <Step title="Zu Settings navigieren">
+    Öffnen Sie Automate → **Settings** → **Environment Variables**
+  </Step>
+
+  <Step title="Variable erstellen">
+    Klicken Sie auf **"Add Variable"** und geben Sie Name und Wert ein
+  </Step>
+
+  <Step title="Variable verwenden">
+    Verwenden Sie `{{ $env.VARIABLE_NAME }}` in Ihren Workflows
+  </Step>
+</Steps>
+
+### Beispiel-Konfiguration
+
+<CodeGroup>
+```json Environment Variables Beispiel
+{
+  "API_BASE_URL": "https://api.localmind.ai",
+  "DATABASE_URL": "postgresql://user:pass@localhost:5432/db",
+  "MAX_RETRIES": "3",
+  "LOG_LEVEL": "info"
+}
+```
+
+```javascript Verwendung in Node
+// In einem HTTP Request Node
+{
+  "url": "{{ $env.API_BASE_URL }}/v1/endpoint",
+  "method": "GET"
+}
+
+// In einem Code Node
+const maxRetries = parseInt(process.env.MAX_RETRIES || '3');
+```
+
+```python Python Verwendung
+import os
+
+api_base_url = os.getenv('API_BASE_URL', 'https://api.localmind.ai')
+max_retries = int(os.getenv('MAX_RETRIES', '3'))
+```
+</CodeGroup>
+
+### Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Naming Convention" icon="tag">
+    Verwenden Sie GROSSBUCHSTABEN und Unterstriche: `API_BASE_URL`
+  </Card>
+  <Card title="Sensible Daten" icon="lock">
+    Speichern Sie API Keys, Passwörter und Tokens als Environment Variables
+  </Card>
+  <Card title="Dokumentation" icon="file-lines">
+    Dokumentieren Sie alle Environment Variables in Ihrer Dokumentation
+  </Card>
+  <Card title="Default Values" icon="circle-half-stroke">
+    Stellen Sie sicher, dass Workflows auch ohne Environment Variables funktionieren
+  </Card>
+</CardGroup>
+
+## Credential Management
+
+### Übersicht
+
+Credentials ermöglichen die sichere Speicherung von Zugangsdaten für verschiedene Services.
+
+<CardGroup cols={2}>
+  <Card title="Sichere Speicherung" icon="lock">
+    Credentials werden verschlüsselt gespeichert
+  </Card>
+  <Card title="Wiederverwendbar" icon="recycle">
+    Einmal erstellt, in mehreren Workflows verwendbar
+  </Card>
+  <Card title="Zentrale Verwaltung" icon="folder">
+    Alle Credentials an einem Ort verwalten
+  </Card>
+  <Card title="Einfache Updates" icon="arrows-rotate">
+    Credentials aktualisieren ohne Workflow-Änderungen
+  </Card>
+</CardGroup>
+
+### Credential erstellen
+
+<Steps>
+  <Step title="Zu Credentials navigieren">
+    Öffnen Sie Automate → **Settings** → **Credentials**
+  </Step>
+
+  <Step title="Credential-Typ wählen">
+    Wählen Sie den gewünschten Credential-Typ (z.B. HTTP Header Auth, API Key, OAuth2)
+  </Step>
+
+  <Step title="Daten eingeben">
+    Geben Sie die erforderlichen Informationen ein
+  </Step>
+
+  <Step title="Speichern">
+    Klicken Sie auf **"Save"** - Credentials werden verschlüsselt gespeichert
+  </Step>
+</Steps>
+
+### Verfügbare Credential-Typen
+
+<AccordionGroup>
+  <Accordion title="HTTP Header Auth" icon="globe">
+    **Verwendung:** API Keys oder Tokens in HTTP Headers
+    
+    **Felder:**
+    - Header Name (z.B. `X-API-Key`)
+    - Header Value (der API Key)
+    
+    **Beispiel:**
+    ```json
+    {
+      "name": "X-API-Key",
+      "value": "your-api-key-here"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="API Key" icon="key">
+    **Verwendung:** Einfache API Key Authentifizierung
+    
+    **Felder:**
+    - API Key
+    
+    **Beispiel:**
+    ```json
+    {
+      "apiKey": "sk-1234567890abcdef"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Basic Auth" icon="user">
+    **Verwendung:** HTTP Basic Authentication
+    
+    **Felder:**
+    - Username
+    - Password
+    
+    **Beispiel:**
+    ```json
+    {
+      "user": "username",
+      "password": "password"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="OAuth2" icon="lock">
+    **Verwendung:** OAuth2 Authentifizierung
+    
+    **Felder:**
+    - Client ID
+    - Client Secret
+    - Authorization URL
+    - Access Token URL
+    - Scope
+    
+    **Beispiel:**
+    ```json
+    {
+      "clientId": "your-client-id",
+      "clientSecret": "your-client-secret",
+      "authorizationUrl": "https://oauth.example.com/authorize",
+      "accessTokenUrl": "https://oauth.example.com/token",
+      "scope": "read write"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Credential verwenden
+
+<CodeGroup>
+```json HTTP Request Node mit Credential
+{
+  "name": "API Call",
+  "type": "httpRequest",
+  "parameters": {
+    "url": "https://api.example.com/endpoint",
+    "method": "GET",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "httpHeaderAuth"
+  },
+  "credentials": {
+    "httpHeaderAuth": {
+      "id": "credential_123",
+      "name": "My API Key"
+    }
+  }
+}
+```
+</CodeGroup>
+
+### Credential Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Regelmäßige Rotation" icon="arrows-rotate">
+    Rotieren Sie Credentials regelmäßig für bessere Sicherheit
+  </Card>
+  <Card title="Least Privilege" icon="user-shield">
+    Verwenden Sie Credentials mit minimalen notwendigen Berechtigungen
+  </Card>
+  <Card title="Separate Credentials" icon="users">
+    Verwenden Sie separate Credentials für verschiedene Umgebungen
+  </Card>
+  <Card title="Dokumentation" icon="file-lines">
+    Dokumentieren Sie, welche Credentials für welche Services verwendet werden
+  </Card>
+</CardGroup>
+
+## Execution Settings
+
+### Timeout-Konfiguration
+
+Konfigurieren Sie Timeouts für verschiedene Operationen:
+
+<AccordionGroup>
+  <Accordion title="Workflow Timeout" icon="clock">
+    **Beschreibung:** Maximale Ausführungszeit für einen gesamten Workflow
+    
+    **Standard:** 3600 Sekunden (1 Stunde)
+    
+    **Empfehlung:** 
+    - Kurze Workflows: 300 Sekunden (5 Minuten)
+    - Mittlere Workflows: 1800 Sekunden (30 Minuten)
+    - Lange Workflows: 7200 Sekunden (2 Stunden)
+    
+    <CodeGroup>
+    ```json Workflow Timeout
+    {
+      "settings": {
+        "executionTimeout": 3600
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Node Timeout" icon="hourglass">
+    **Beschreibung:** Maximale Ausführungszeit für einen einzelnen Node
+    
+    **Standard:** 300 Sekunden (5 Minuten)
+    
+    **Empfehlung:** Anpassen basierend auf erwarteter Node-Ausführungszeit
+    
+    <CodeGroup>
+    ```json Node Timeout
+    {
+      "settings": {
+        "nodeTimeout": 300
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+</AccordionGroup>
+
+### Retry-Konfiguration
+
+Konfigurieren Sie Retry-Verhalten für fehlgeschlagene Nodes:
+
+<CardGroup cols={2}>
+  <Card title="Max Retries" icon="repeat">
+    **Beschreibung:** Maximale Anzahl von Wiederholungsversuchen
+    
+    **Standard:** 3
+    
+    **Empfehlung:** 3-5 für API-Calls, 0 für kritische Operationen
+  </Card>
+  <Card title="Retry Delay" icon="clock">
+    **Beschreibung:** Wartezeit zwischen Retries
+    
+    **Standard:** 1000ms (1 Sekunde)
+    
+    **Empfehlung:** Exponential Backoff für API-Calls
+  </Card>
+</CardGroup>
+
+<CodeGroup>
+```json Retry Configuration
+{
+  "settings": {
+    "maxRetries": 3,
+    "retryDelay": 1000,
+    "retryOnFail": true
+  }
+}
+```
+</CodeGroup>
+
+## Performance-Einstellungen
+
+### Caching
+
+Aktivieren Sie Caching für bessere Performance:
+
+<AccordionGroup>
+  <Accordion title="Response Caching" icon="database">
+    **Beschreibung:** Cached API-Responses für wiederholte Anfragen
+    
+    **Aktivierung:** In HTTP Request Node Settings
+    
+    **Cache Dauer:** Konfigurierbar (Standard: 300 Sekunden)
+    
+    <CodeGroup>
+    ```json Caching Configuration
+    {
+      "settings": {
+        "cacheResponse": true,
+        "cacheTTL": 300
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Data Caching" icon="hard-drive">
+    **Beschreibung:** Cached verarbeitete Daten zwischen Executions
+    
+    **Verwendung:** Für teure Berechnungen oder Transformationen
+    
+    **Empfehlung:** Aktivieren für Daten, die sich selten ändern
+  </Accordion>
+</AccordionGroup>
+
+### Parallel Execution
+
+Konfigurieren Sie parallele Ausführung:
+
+<CardGroup cols={2}>
+  <Card title="Parallel Nodes" icon="layer-group">
+    **Beschreibung:** Mehrere Nodes parallel ausführen
+    
+    **Aktivierung:** Automatisch wenn Nodes keine Abhängigkeiten haben
+    
+    **Empfehlung:** Aktivieren für unabhängige Operationen
+  </Card>
+  <Card title="Batch Processing" icon="list">
+    **Beschreibung:** Verarbeitet mehrere Items gleichzeitig
+    
+    **Konfiguration:** In Node-Settings
+    
+    **Empfehlung:** Anpassen basierend auf API Rate Limits
+  </Card>
+</CardGroup>
+
+## Monitoring und Alerting
+
+### Execution Monitoring
+
+Überwachen Sie Workflow-Ausführungen:
+
+<CardGroup cols={2}>
+  <Card title="Execution Logs" icon="file-lines">
+    **Beschreibung:** Detaillierte Logs für jede Execution
+    
+    **Aktivierung:** Automatisch aktiviert
+    
+    **Verwendung:** Debugging und Fehleranalyse
+  </Card>
+  <Card title="Performance Metrics" icon="chart-line">
+    **Beschreibung:** Metriken für Execution-Zeit, Node-Performance
+    
+    **Verwendung:** Performance-Optimierung
+  </Card>
+</CardGroup>
+
+### Alerting-Konfiguration
+
+Konfigurieren Sie Benachrichtigungen:
+
+<AccordionGroup>
+  <Accordion title="Error Alerts" icon="triangle-exclamation">
+    **Beschreibung:** Benachrichtigungen bei Workflow-Fehlern
+    
+    **Konfiguration:**
+    - Email-Benachrichtigungen
+    - Webhook-Benachrichtigungen
+    - Slack-Integration
+    
+    <CodeGroup>
+    ```json Error Alert Configuration
+    {
+      "settings": {
+        "errorAlerts": {
+          "enabled": true,
+          "email": "admin@example.com",
+          "webhook": "https://hooks.slack.com/...",
+          "minErrorCount": 3
+        }
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Performance Alerts" icon="gauge">
+    **Beschreibung:** Benachrichtigungen bei Performance-Problemen
+    
+    **Konfiguration:**
+    - Warnung bei langsamen Executions
+    - Warnung bei hoher Fehlerrate
+    
+    <CodeGroup>
+    ```json Performance Alert Configuration
+    {
+      "settings": {
+        "performanceAlerts": {
+          "enabled": true,
+          "slowExecutionThreshold": 60000,
+          "errorRateThreshold": 0.1
+        }
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+</AccordionGroup>
+
+## Backup und Wiederherstellung
+
+### Workflow-Backups
+
+<Steps>
+  <Step title="Automatische Backups aktivieren">
+    Navigieren Sie zu **Settings** → **Backups** → **Enable Automatic Backups**
+  </Step>
+
+  <Step title="Backup-Intervall konfigurieren">
+    Wählen Sie das gewünschte Intervall (täglich, wöchentlich)
+  </Step>
+
+  <Step title="Backup-Speicherort wählen">
+    Wählen Sie lokalen Speicher oder Cloud-Storage
+  </Step>
+
+  <Step title="Manuelle Backups erstellen">
+    Erstellen Sie manuelle Backups vor größeren Änderungen
+  </Step>
+</Steps>
+
+### Backup-Wiederherstellung
+
+<Steps>
+  <Step title="Backup auswählen">
+    Navigieren Sie zu **Settings** → **Backups** → **Restore**
+  </Step>
+
+  <Step title="Wiederherstellungs-Optionen wählen">
+    - Vollständige Wiederherstellung
+    - Selektive Workflow-Wiederherstellung
+  </Step>
+
+  <Step title="Wiederherstellung bestätigen">
+    Bestätigen Sie die Wiederherstellung
+  </Step>
+</Steps>
+
+## Sicherheits-Einstellungen
+
+### Zugriffskontrolle
+
+<CardGroup cols={2}>
+  <Card title="User Roles" icon="users">
+    **Beschreibung:** Rollenbasierte Zugriffskontrolle
+    
+    **Rollen:**
+    - Admin: Vollzugriff
+    - Editor: Workflows bearbeiten
+    - Viewer: Nur Lesen
+  </Card>
+  <Card title="API Access" icon="key">
+    **Beschreibung:** API-Zugriffskontrolle
+    
+    **Konfiguration:**
+    - API Keys erstellen/verwalten
+    - IP-Whitelisting
+    - Rate Limiting
+  </Card>
+</CardGroup>
+
+### Audit Logging
+
+<CardGroup cols={2}>
+  <Card title="Activity Logs" icon="file-lines">
+    **Beschreibung:** Protokolliert alle Benutzer-Aktivitäten
+    
+    **Erfasst:**
+    - Workflow-Änderungen
+    - Credential-Änderungen
+    - Settings-Änderungen
+  </Card>
+  <Card title="Execution Logs" icon="play">
+    **Beschreibung:** Detaillierte Logs für alle Executions
+    
+    **Verwendung:**
+    - Compliance
+    - Debugging
+    - Performance-Analyse
+  </Card>
+</CardGroup>
+
+## System-Konfiguration
+
+### Allgemeine Einstellungen
+
+<AccordionGroup>
+  <Accordion title="Timezone" icon="clock">
+    **Beschreibung:** Standard-Zeitzone für Workflows
+    
+    **Standard:** UTC
+    
+    **Empfehlung:** Auf Ihre lokale Zeitzone setzen
+    
+    <CodeGroup>
+    ```json Timezone Configuration
+    {
+      "settings": {
+        "timezone": "Europe/Vienna"
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Language" icon="globe">
+    **Beschreibung:** Standard-Sprache für UI und Fehlermeldungen
+    
+    **Optionen:** Deutsch, Englisch, etc.
+    
+    **Standard:** Deutsch
+  </Accordion>
+
+  <Accordion title="Log Level" icon="file-lines">
+    **Beschreibung:** Detaillierungsgrad der Logs
+    
+    **Optionen:**
+    - `debug`: Alle Logs
+    - `info`: Informative Logs
+    - `warn`: Warnungen und Fehler
+    - `error`: Nur Fehler
+    
+    **Empfehlung:** `info` für Produktion, `debug` für Entwicklung
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Environment Variables nutzen" icon="code">
+    Verwenden Sie Environment Variables für alle Konfigurationswerte
+  </Card>
+  <Card title="Credentials sicher speichern" icon="lock">
+    Niemals Credentials direkt in Workflows speichern
+  </Card>
+  <Card title="Timeouts konfigurieren" icon="clock">
+    Setzen Sie angemessene Timeouts für alle Operationen
+  </Card>
+  <Card title="Monitoring aktivieren" icon="eye">
+    Aktivieren Sie Monitoring und Alerting für kritische Workflows
+  </Card>
+  <Card title="Regelmäßige Backups" icon="floppy-disk">
+    Erstellen Sie regelmäßige Backups Ihrer Workflows
+  </Card>
+  <Card title="Dokumentation" icon="file-lines">
+    Dokumentieren Sie alle wichtigen Konfigurationen
+  </Card>
+</CardGroup>
+
+## Häufige Konfigurationen
+
+### Development-Umgebung
+
+<CodeGroup>
+```json Development Settings
+{
+  "settings": {
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "executionTimeout": 3600,
+    "logLevel": "debug"
+  }
+}
+```
+</CodeGroup>
+
+### Production-Umgebung
+
+<CodeGroup>
+```json Production Settings
+{
+  "settings": {
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "executionTimeout": 1800,
+    "logLevel": "info",
+    "errorAlerts": {
+      "enabled": true,
+      "email": "ops@example.com"
+    }
+  }
+}
+```
+</CodeGroup>
+
+## Nächste Schritte
+
+<CardGroup cols={2}>
+  <Card title="API Dokumentation" icon="code" href="/administration-monitoring/api">
+    Erfahren Sie mehr über die Automate API für programmatische Konfiguration.
+  </Card>
+  <Card title="Workflow Basics" icon="diagram-project" href="/automate/basics">
+    Lernen Sie die Grundlagen von Automate Workflows.
+  </Card>
+  <Card title="Performance Optimierung" icon="gauge" href="/automate/performance">
+    Optimieren Sie die Performance Ihrer Workflows.
+  </Card>
+  <Card title="Sicherheit" icon="shield" href="/automate/sicherheit">
+    Erfahren Sie mehr über Sicherheits-Best Practices.
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+**Brauchen Sie Hilfe?** Unser Support-Team hilft Ihnen gerne bei der Konfiguration. Kontaktieren Sie uns unter [support@localmind.ai](mailto:support@localmind.ai).
+</Note>

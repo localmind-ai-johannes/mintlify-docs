@@ -1,0 +1,1062 @@
+---
+title: "API"
+description: "Automate API für externe Integrationen - REST API Dokumentation und Code-Beispiele"
+icon: "code"
+---
+
+# Automate API
+
+Die Automate API ist eine RESTful API, die es Ihnen ermöglicht, Workflows, Executions und Nodes programmatisch zu verwalten und zu überwachen. Sie verwendet JSON für Anfragen und Antworten, alle Endpoints sind über HTTPS verfügbar und erfordern Authentifizierung. Integrieren Sie Automate nahtlos in Ihre eigenen Anwendungen und Systeme.
+
+<CardGroup cols={3}>
+  <Card title="REST API" icon="globe">
+    Standard REST-Endpoints für alle Operationen
+  </Card>
+  <Card title="JSON Format" icon="code">
+    Alle Anfragen und Antworten im JSON-Format
+  </Card>
+  <Card title="HTTPS Only" icon="lock">
+    Sichere Verbindungen über HTTPS erforderlich
+  </Card>
+</CardGroup>
+
+## Authentifizierung
+
+### API Key Authentication
+
+Die Automate API verwendet API Keys für die Authentifizierung. Sie erhalten Ihren API Key aus den Automate-Einstellungen.
+
+<CodeGroup>
+```bash cURL Beispiel
+curl -X GET "https://automate.localmind.ai/api/v1/workflows" \
+  -H "X-Api-Key: your-api-key-here"
+```
+
+```javascript JavaScript Beispiel
+const response = await fetch('https://automate.localmind.ai/api/v1/workflows', {
+  headers: {
+    'X-Api-Key': 'your-api-key-here',
+    'Content-Type': 'application/json',
+  },
+});
+```
+
+```python Python Beispiel
+import requests
+
+headers = {
+    'X-Api-Key': 'your-api-key-here',
+    'Content-Type': 'application/json',
+}
+
+response = requests.get(
+    'https://automate.localmind.ai/api/v1/workflows',
+    headers=headers
+)
+```
+</CodeGroup>
+
+### API Key erstellen
+
+<Steps>
+  <Step title="Zu Automate-Einstellungen navigieren">
+    Öffnen Sie Automate und navigieren Sie zu **Settings** → **API Keys**
+  </Step>
+
+  <Step title="Neuen API Key erstellen">
+    Klicken Sie auf **"Create API Key"** und geben Sie einen Namen ein
+  </Step>
+
+  <Step title="API Key kopieren">
+    Kopieren Sie den generierten API Key sofort - er wird nur einmal angezeigt
+  </Step>
+
+  <Step title="Sicher speichern">
+    Speichern Sie den API Key sicher in Ihrem Credential-Manager oder Environment Variables
+  </Step>
+</Steps>
+
+<Warning>
+**Wichtig:** API Keys sind wie Passwörter. Teilen Sie sie niemals öffentlich und speichern Sie sie sicher. Wenn ein API Key kompromittiert wurde, löschen Sie ihn sofort und erstellen Sie einen neuen.
+</Warning>
+
+## Base URL
+
+Alle API-Endpoints sind relativ zu dieser Base URL:
+
+```
+https://automate.localmind.ai/api/v1
+```
+
+Für Self-Hosted Installationen:
+
+```
+https://your-domain.com/api/v1
+```
+
+## Rate Limits
+
+Die Automate API hat Rate Limits, um die Stabilität des Systems zu gewährleisten:
+
+<CardGroup cols={2}>
+  <Card title="Standard Limit" icon="gauge">
+    **100 Requests pro Minute** pro API Key
+  </Card>
+  <Card title="Burst Limit" icon="bolt">
+    **10 Requests pro Sekunde** für kurze Bursts
+  </Card>
+</CardGroup>
+
+### Rate Limit Headers
+
+Jede API-Antwort enthält Rate Limit Informationen:
+
+<CodeGroup>
+```http Rate Limit Headers
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1640995200
+```
+</CodeGroup>
+
+### Rate Limit Handling
+
+<CodeGroup>
+```javascript Rate Limit Handling
+async function makeApiRequest(url, options) {
+  const response = await fetch(url, options);
+  
+  if (response.status === 429) {
+    // Rate Limit erreicht
+    const resetTime = parseInt(response.headers.get('X-RateLimit-Reset'));
+    const waitTime = resetTime - Math.floor(Date.now() / 1000);
+    
+    console.log(`Rate limit erreicht. Warte ${waitTime} Sekunden...`);
+    await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
+    
+    // Retry
+    return makeApiRequest(url, options);
+  }
+  
+  return response;
+}
+```
+
+```python Python Rate Limit Handling
+import time
+import requests
+
+def make_api_request(url, headers):
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 429:
+        # Rate Limit erreicht
+        reset_time = int(response.headers.get('X-RateLimit-Reset', 0))
+        wait_time = reset_time - int(time.time())
+        
+        if wait_time > 0:
+            print(f"Rate limit erreicht. Warte {wait_time} Sekunden...")
+            time.sleep(wait_time)
+            
+            # Retry
+            return make_api_request(url, headers)
+    
+    return response
+```
+</CodeGroup>
+
+## Workflows
+
+### Workflow auflisten
+
+Rufen Sie alle Workflows ab:
+
+<CodeGroup>
+```http GET /workflows
+GET /api/v1/workflows
+X-Api-Key: your-api-key-here
+```
+
+```json Response
+{
+  "data": [
+    {
+      "id": "workflow_123",
+      "name": "Email Processing",
+      "active": true,
+      "nodes": 5,
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-20T14:22:00Z"
+    },
+    {
+      "id": "workflow_456",
+      "name": "Data Sync",
+      "active": false,
+      "nodes": 8,
+      "createdAt": "2024-01-10T09:15:00Z",
+      "updatedAt": "2024-01-18T16:45:00Z"
+    }
+  ],
+  "meta": {
+    "total": 2,
+    "page": 1,
+    "limit": 50
+  }
+}
+```
+
+```javascript JavaScript Beispiel
+const response = await fetch('https://automate.localmind.ai/api/v1/workflows', {
+  headers: {
+    'X-Api-Key': 'your-api-key-here',
+  },
+});
+
+const data = await response.json();
+console.log(data.data); // Array von Workflows
+```
+
+```python Python Beispiel
+import requests
+
+headers = {
+    'X-Api-Key': 'your-api-key-here',
+}
+
+response = requests.get(
+    'https://automate.localmind.ai/api/v1/workflows',
+    headers=headers
+)
+
+workflows = response.json()['data']
+for workflow in workflows:
+    print(f"{workflow['name']}: {workflow['id']}")
+```
+</CodeGroup>
+
+### Workflow abrufen
+
+Rufen Sie einen spezifischen Workflow ab:
+
+<CodeGroup>
+```http GET /workflows/:id
+GET /api/v1/workflows/workflow_123
+X-Api-Key: your-api-key-here
+```
+
+```json Response
+{
+  "data": {
+    "id": "workflow_123",
+    "name": "Email Processing",
+    "active": true,
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "webhook",
+        "name": "Webhook",
+        "parameters": {}
+      },
+      {
+        "id": "node_2",
+        "type": "localmindAgent",
+        "name": "Process Email",
+        "parameters": {
+          "agentId": "agent_456",
+          "input": "{{ $json.body }}"
+        }
+      }
+    ],
+    "connections": {
+      "node_1": {
+        "main": [
+          [
+            {
+              "node": "node_2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "saveDataErrorExecution": "all",
+      "saveDataSuccessExecution": "all",
+      "saveManualExecutions": true
+    },
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-20T14:22:00Z"
+  }
+}
+```
+</CodeGroup>
+
+### Workflow erstellen
+
+Erstellen Sie einen neuen Workflow:
+
+<CodeGroup>
+```http POST /workflows
+POST /api/v1/workflows
+X-Api-Key: your-api-key-here
+Content-Type: application/json
+
+{
+  "name": "New Workflow",
+  "nodes": [
+    {
+      "id": "node_1",
+      "type": "webhook",
+      "name": "Webhook",
+      "parameters": {}
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  }
+}
+```
+
+```javascript JavaScript Beispiel
+const workflow = {
+  name: 'New Workflow',
+  nodes: [
+    {
+      id: 'node_1',
+      type: 'webhook',
+      name: 'Webhook',
+      parameters: {},
+    },
+  ],
+  connections: {},
+  settings: {
+    saveDataErrorExecution: 'all',
+    saveDataSuccessExecution: 'all',
+  },
+};
+
+const response = await fetch('https://automate.localmind.ai/api/v1/workflows', {
+  method: 'POST',
+  headers: {
+    'X-Api-Key': 'your-api-key-here',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(workflow),
+});
+
+const result = await response.json();
+console.log('Workflow erstellt:', result.data.id);
+```
+
+```python Python Beispiel
+import requests
+import json
+
+workflow = {
+    'name': 'New Workflow',
+    'nodes': [
+        {
+            'id': 'node_1',
+            'type': 'webhook',
+            'name': 'Webhook',
+            'parameters': {},
+        },
+    ],
+    'connections': {},
+    'settings': {
+        'saveDataErrorExecution': 'all',
+        'saveDataSuccessExecution': 'all',
+    },
+}
+
+headers = {
+    'X-Api-Key': 'your-api-key-here',
+    'Content-Type': 'application/json',
+}
+
+response = requests.post(
+    'https://automate.localmind.ai/api/v1/workflows',
+    headers=headers,
+    data=json.dumps(workflow)
+)
+
+result = response.json()
+print(f"Workflow erstellt: {result['data']['id']}")
+```
+</CodeGroup>
+
+### Workflow aktualisieren
+
+Aktualisieren Sie einen bestehenden Workflow:
+
+<CodeGroup>
+```http PUT /workflows/:id
+PUT /api/v1/workflows/workflow_123
+X-Api-Key: your-api-key-here
+Content-Type: application/json
+
+{
+  "name": "Updated Workflow Name",
+  "active": true,
+  "nodes": [...],
+  "connections": {...}
+}
+```
+
+```javascript JavaScript Beispiel
+const updates = {
+  name: 'Updated Workflow Name',
+  active: true,
+};
+
+const response = await fetch(
+  'https://automate.localmind.ai/api/v1/workflows/workflow_123',
+  {
+    method: 'PUT',
+    headers: {
+      'X-Api-Key': 'your-api-key-here',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updates),
+  }
+);
+```
+</CodeGroup>
+
+### Workflow aktivieren/deaktivieren
+
+Aktivieren oder deaktivieren Sie einen Workflow:
+
+<CodeGroup>
+```http POST /workflows/:id/activate
+POST /api/v1/workflows/workflow_123/activate
+X-Api-Key: your-api-key-here
+```
+
+```http POST /workflows/:id/deactivate
+POST /api/v1/workflows/workflow_123/deactivate
+X-Api-Key: your-api-key-here
+```
+
+```javascript JavaScript Beispiel
+// Aktivieren
+await fetch('https://automate.localmind.ai/api/v1/workflows/workflow_123/activate', {
+  method: 'POST',
+  headers: {
+    'X-Api-Key': 'your-api-key-here',
+  },
+});
+
+// Deaktivieren
+await fetch('https://automate.localmind.ai/api/v1/workflows/workflow_123/deactivate', {
+  method: 'POST',
+  headers: {
+    'X-Api-Key': 'your-api-key-here',
+  },
+});
+```
+</CodeGroup>
+
+### Workflow löschen
+
+Löschen Sie einen Workflow:
+
+<CodeGroup>
+```http DELETE /workflows/:id
+DELETE /api/v1/workflows/workflow_123
+X-Api-Key: your-api-key-here
+```
+
+```javascript JavaScript Beispiel
+const response = await fetch(
+  'https://automate.localmind.ai/api/v1/workflows/workflow_123',
+  {
+    method: 'DELETE',
+    headers: {
+      'X-Api-Key': 'your-api-key-here',
+    },
+  }
+);
+
+if (response.ok) {
+  console.log('Workflow gelöscht');
+}
+```
+</CodeGroup>
+
+## Executions
+
+### Executions auflisten
+
+Rufen Sie alle Executions ab:
+
+<CodeGroup>
+```http GET /executions
+GET /api/v1/executions?workflowId=workflow_123&limit=50&status=success
+X-Api-Key: your-api-key-here
+```
+
+```json Response
+{
+  "data": [
+    {
+      "id": "execution_789",
+      "workflowId": "workflow_123",
+      "status": "success",
+      "startedAt": "2024-01-20T10:30:00Z",
+      "stoppedAt": "2024-01-20T10:30:05Z",
+      "finished": true,
+      "mode": "trigger"
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 50
+  }
+}
+```
+
+```javascript JavaScript Beispiel
+const params = new URLSearchParams({
+  workflowId: 'workflow_123',
+  limit: '50',
+  status: 'success',
+});
+
+const response = await fetch(
+  `https://automate.localmind.ai/api/v1/executions?${params}`,
+  {
+    headers: {
+      'X-Api-Key': 'your-api-key-here',
+    },
+  }
+);
+
+const data = await response.json();
+```
+</CodeGroup>
+
+### Execution abrufen
+
+Rufen Sie eine spezifische Execution mit Details ab:
+
+<CodeGroup>
+```http GET /executions/:id
+GET /api/v1/executions/execution_789
+X-Api-Key: your-api-key-here
+```
+
+```json Response
+{
+  "data": {
+    "id": "execution_789",
+    "workflowId": "workflow_123",
+    "status": "success",
+    "startedAt": "2024-01-20T10:30:00Z",
+    "stoppedAt": "2024-01-20T10:30:05Z",
+    "finished": true,
+    "mode": "trigger",
+    "data": {
+      "resultData": {
+        "runData": {
+          "node_1": [
+            {
+              "startTime": 1642681800000,
+              "executionTime": 100,
+              "data": {
+                "main": [
+                  [
+                    {
+                      "json": {
+                        "body": "Test data"
+                      }
+                    }
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+```
+</CodeGroup>
+
+### Workflow manuell ausführen
+
+Führen Sie einen Workflow manuell aus:
+
+<CodeGroup>
+```http POST /workflows/:id/execute
+POST /api/v1/workflows/workflow_123/execute
+X-Api-Key: your-api-key-here
+Content-Type: application/json
+
+{
+  "data": {
+    "main": [
+      [
+        {
+          "json": {
+            "input": "Test data"
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+```javascript JavaScript Beispiel
+const executionData = {
+  data: {
+    main: [
+      [
+        {
+          json: {
+            input: 'Test data',
+          },
+        },
+      ],
+    ],
+  },
+};
+
+const response = await fetch(
+  'https://automate.localmind.ai/api/v1/workflows/workflow_123/execute',
+  {
+    method: 'POST',
+    headers: {
+      'X-Api-Key': 'your-api-key-here',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(executionData),
+  }
+);
+
+const result = await response.json();
+console.log('Execution ID:', result.data.id);
+```
+</CodeGroup>
+
+## Webhooks
+
+### Webhook-URL abrufen
+
+Rufen Sie die Webhook-URL für einen Workflow ab:
+
+<CodeGroup>
+```http GET /workflows/:id/webhook
+GET /api/v1/workflows/workflow_123/webhook
+X-Api-Key: your-api-key-here
+```
+
+```json Response
+{
+  "data": {
+    "webhookUrl": "https://automate.localmind.ai/webhook/workflow_123/abc123",
+    "path": "workflow_123/abc123",
+    "httpMethod": "POST"
+  }
+}
+```
+</CodeGroup>
+
+### Webhook testen
+
+Testen Sie einen Webhook:
+
+<CodeGroup>
+```bash cURL Beispiel
+curl -X POST "https://automate.localmind.ai/webhook/workflow_123/abc123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "test": "data"
+  }'
+```
+
+```javascript JavaScript Beispiel
+const webhookData = {
+  test: 'data',
+  timestamp: new Date().toISOString(),
+};
+
+const response = await fetch(
+  'https://automate.localmind.ai/webhook/workflow_123/abc123',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(webhookData),
+  }
+);
+```
+</CodeGroup>
+
+## Error Handling
+
+### HTTP Status Codes
+
+Die API verwendet standardmäßige HTTP Status Codes:
+
+<CardGroup cols={2}>
+  <Card title="200 OK" icon="check">
+    Anfrage erfolgreich
+  </Card>
+  <Card title="201 Created" icon="plus">
+    Ressource erfolgreich erstellt
+  </Card>
+  <Card title="400 Bad Request" icon="triangle-exclamation">
+    Ungültige Anfrage-Parameter
+  </Card>
+  <Card title="401 Unauthorized" icon="lock">
+    Authentifizierung fehlgeschlagen
+  </Card>
+  <Card title="403 Forbidden" icon="ban">
+    Keine Berechtigung für diese Ressource
+  </Card>
+  <Card title="404 Not Found" icon="magnifying-glass">
+    Ressource nicht gefunden
+  </Card>
+  <Card title="429 Too Many Requests" icon="gauge">
+    Rate Limit überschritten
+  </Card>
+  <Card title="500 Internal Server Error" icon="server">
+    Server-Fehler
+  </Card>
+</CardGroup>
+
+### Error Response Format
+
+Alle Fehlerantworten folgen diesem Format:
+
+<CodeGroup>
+```json Error Response
+{
+  "error": {
+    "message": "Workflow nicht gefunden",
+    "code": "WORKFLOW_NOT_FOUND",
+    "statusCode": 404,
+    "details": {
+      "workflowId": "workflow_123"
+    }
+  }
+}
+```
+
+```javascript Error Handling Beispiel
+try {
+  const response = await fetch(url, options);
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error.message);
+  }
+  
+  return await response.json();
+} catch (error) {
+  console.error('API Error:', error.message);
+  throw error;
+}
+```
+
+```python Python Error Handling
+import requests
+
+try:
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    return response.json()
+except requests.exceptions.HTTPError as e:
+    error_data = e.response.json()
+    print(f"API Error: {error_data['error']['message']}")
+    raise
+```
+</CodeGroup>
+
+## Retry-Logik
+
+Implementieren Sie Retry-Logik für robuste API-Calls:
+
+<CodeGroup>
+```javascript Retry-Logik
+async function apiRequestWithRetry(url, options, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      
+      if (response.ok) {
+        return await response.json();
+      }
+      
+      // Retry bei 5xx Fehlern
+      if (response.status >= 500 && attempt < maxRetries) {
+        const waitTime = Math.pow(2, attempt) * 1000; // Exponential backoff
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+      
+      throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      if (attempt === maxRetries) {
+        throw error;
+      }
+      
+      const waitTime = Math.pow(2, attempt) * 1000;
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+}
+```
+
+```python Python Retry-Logik
+import time
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+def create_session_with_retry():
+    session = requests.Session()
+    
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[500, 502, 503, 504],
+    )
+    
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("https://", adapter)
+    
+    return session
+
+# Verwendung
+session = create_session_with_retry()
+response = session.get(url, headers=headers)
+```
+</CodeGroup>
+
+## API-Monitoring
+
+### Logging
+
+Implementieren Sie Logging für API-Calls:
+
+<CodeGroup>
+```javascript Logging Beispiel
+function logApiCall(method, url, status, duration) {
+  console.log({
+    timestamp: new Date().toISOString(),
+    method,
+    url,
+    status,
+    duration: `${duration}ms`,
+  });
+}
+
+async function monitoredApiCall(url, options) {
+  const startTime = Date.now();
+  
+  try {
+    const response = await fetch(url, options);
+    const duration = Date.now() - startTime;
+    
+    logApiCall(options.method || 'GET', url, response.status, duration);
+    
+    return response;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logApiCall(options.method || 'GET', url, 'ERROR', duration);
+    throw error;
+  }
+}
+```
+</CodeGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="API Keys sicher speichern" icon="lock">
+    Verwenden Sie Environment Variables oder einen Credential-Manager. Niemals in Code committen.
+  </Card>
+  <Card title="Rate Limits respektieren" icon="gauge">
+    Implementieren Sie Rate Limit Handling und Exponential Backoff.
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation">
+    Behandeln Sie alle möglichen Fehlerfälle und implementieren Sie Retry-Logik.
+  </Card>
+  <Card title="Logging" icon="file-lines">
+    Loggen Sie alle API-Calls für Debugging und Monitoring.
+  </Card>
+  <Card title="Timeouts setzen" icon="clock">
+    Setzen Sie angemessene Timeouts für API-Calls.
+  </Card>
+  <Card title="Pagination nutzen" icon="list">
+    Verwenden Sie Pagination für große Datensätze.
+  </Card>
+</CardGroup>
+
+## Code-Beispiele
+
+### Vollständiges Beispiel: Workflow-Management
+
+<CodeGroup>
+```javascript Vollständiges Beispiel
+class AutomateApiClient {
+  constructor(apiKey, baseUrl = 'https://automate.localmind.ai/api/v1') {
+    this.apiKey = apiKey;
+    this.baseUrl = baseUrl;
+  }
+
+  async request(endpoint, options = {}) {
+    const url = `${this.baseUrl}${endpoint}`;
+    const headers = {
+      'X-Api-Key': this.apiKey,
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || `HTTP ${response.status}`);
+    }
+
+    return await response.json();
+  }
+
+  async getWorkflows() {
+    return this.request('/workflows');
+  }
+
+  async getWorkflow(id) {
+    return this.request(`/workflows/${id}`);
+  }
+
+  async createWorkflow(workflow) {
+    return this.request('/workflows', {
+      method: 'POST',
+      body: JSON.stringify(workflow),
+    });
+  }
+
+  async executeWorkflow(id, data) {
+    return this.request(`/workflows/${id}/execute`, {
+      method: 'POST',
+      body: JSON.stringify({ data }),
+    });
+  }
+}
+
+// Verwendung
+const client = new AutomateApiClient('your-api-key');
+
+// Workflows abrufen
+const workflows = await client.getWorkflows();
+console.log(workflows.data);
+
+// Workflow ausführen
+const execution = await client.executeWorkflow('workflow_123', {
+  main: [[{ json: { input: 'Test' } }]],
+});
+console.log('Execution ID:', execution.data.id);
+```
+
+```python Python Vollständiges Beispiel
+import requests
+from typing import Dict, Any, Optional
+
+class AutomateApiClient:
+    def __init__(self, api_key: str, base_url: str = 'https://automate.localmind.ai/api/v1'):
+        self.api_key = api_key
+        self.base_url = base_url
+        self.session = requests.Session()
+        self.session.headers.update({
+            'X-Api-Key': api_key,
+            'Content-Type': 'application/json',
+        })
+
+    def _request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
+        url = f'{self.base_url}{endpoint}'
+        response = self.session.request(method, url, **kwargs)
+        response.raise_for_status()
+        return response.json()
+
+    def get_workflows(self) -> Dict[str, Any]:
+        return self._request('GET', '/workflows')
+
+    def get_workflow(self, workflow_id: str) -> Dict[str, Any]:
+        return self._request('GET', f'/workflows/{workflow_id}')
+
+    def create_workflow(self, workflow: Dict[str, Any]) -> Dict[str, Any]:
+        return self._request('POST', '/workflows', json=workflow)
+
+    def execute_workflow(self, workflow_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        return self._request('POST', f'/workflows/{workflow_id}/execute', json={'data': data})
+
+# Verwendung
+client = AutomateApiClient('your-api-key')
+
+# Workflows abrufen
+workflows = client.get_workflows()
+print(workflows['data'])
+
+# Workflow ausführen
+execution = client.execute_workflow('workflow_123', {
+    'main': [[{'json': {'input': 'Test'}}]],
+})
+print(f"Execution ID: {execution['data']['id']}")
+```
+</CodeGroup>
+
+## Sicherheitsrichtlinien
+
+<CardGroup cols={2}>
+  <Card title="API Keys schützen" icon="shield">
+    - Niemals in Code committen
+    - Verwenden Sie Environment Variables
+    - Rotieren Sie Keys regelmäßig
+  </Card>
+  <Card title="HTTPS verwenden" icon="lock">
+    Verwenden Sie immer HTTPS für API-Calls. HTTP ist nicht erlaubt.
+  </Card>
+  <Card title="Least Privilege" icon="user-shield">
+    Erstellen Sie API Keys mit minimalen notwendigen Berechtigungen.
+  </Card>
+  <Card title="Input Validation" icon="check">
+    Validieren Sie alle Inputs bevor Sie sie an die API senden.
+  </Card>
+</CardGroup>
+
+## Nächste Schritte
+
+<CardGroup cols={2}>
+  <Card title="Settings & Konfiguration" icon="gear" href="/administration-monitoring/settings">
+    Erfahren Sie mehr über Automate-Einstellungen und Konfiguration.
+  </Card>
+  <Card title="Custom Nodes" icon="puzzle-piece" href="/automate/custom-nodes">
+    Erstellen Sie eigene Nodes für spezifische Anwendungsfälle.
+  </Card>
+  <Card title="Workflow Basics" icon="diagram-project" href="/automate/basics">
+    Lernen Sie die Grundlagen von Automate Workflows.
+  </Card>
+  <Card title="Debugging" icon="bug" href="/automate/debugging">
+    Debugging-Techniken für Workflows und API-Integrationen.
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+**Brauchen Sie Hilfe?** Unser API-Support-Team hilft Ihnen gerne bei der Integration. Kontaktieren Sie uns unter [api-support@localmind.ai](mailto:api-support@localmind.ai).
+</Note>

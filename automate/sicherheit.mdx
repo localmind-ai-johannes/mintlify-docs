@@ -1,0 +1,353 @@
+---
+title: "Sicherheit"
+description: "Sicherheitsbest Practices für Automate-Workflows"
+icon: "shield"
+---
+
+# Sicherheit
+
+Sicherheit ist von größter Bedeutung bei der Automatisierung. Erfahren Sie, wie Sie Ihre Automate-Workflows sicher konfigurieren und sensible Daten schützen.
+
+## Sicherheitsgrundlagen
+
+<CardGroup cols={2}>
+  <Card title="Credentials schützen" icon="key">
+    Speichern Sie Credentials sicher und niemals im Code.
+  </Card>
+  <Card title="Datenverschlüsselung" icon="lock">
+    Verwenden Sie Verschlüsselung für sensible Daten.
+  </Card>
+  <Card title="Zugriffskontrolle" icon="user-shield">
+    Implementieren Sie angemessene Zugriffskontrollen.
+  </Card>
+  <Card title="Audit-Logging" icon="file-invoice">
+    Protokollieren Sie alle wichtigen Aktionen.
+  </Card>
+</CardGroup>
+
+## Credential-Management
+
+### Environment Variables
+
+**Nutzen Sie Environment Variables für sensible Daten:**
+
+<AccordionGroup>
+  <Accordion title="Setup" icon="gear">
+    **Environment Variables konfigurieren:**
+    
+    1. Navigieren Sie zu Workflow-Einstellungen
+    2. Öffnen Sie "Environment Variables"
+    3. Fügen Sie Variablen hinzu:
+    
+    ```
+    API_KEY=your-secret-key
+    DATABASE_PASSWORD=secure-password
+    WEBHOOK_SECRET=secret-token
+    ```
+    
+    <Warning>
+      Niemals Credentials direkt in Nodes hardcoden!
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Verwendung" icon="code">
+    **In Nodes verwenden:**
+    
+    <CodeGroup>
+    ```json Environment Variable verwenden
+    {
+      "url": "https://api.example.com/data",
+      "headers": {
+        "Authorization": "Bearer {{ $env.API_KEY }}"
+      }
+    }
+    ```
+    
+    ```javascript Expression
+    // Zugriff auf Environment Variable
+    {{ $env.API_KEY }}
+    {{ $env.DATABASE_URL }}
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Best Practices" icon="shield">
+    **Sicherheitsrichtlinien:**
+    
+    - Verwenden Sie starke, eindeutige Passwörter
+    - Rotieren Sie Credentials regelmäßig
+    - Nutzen Sie unterschiedliche Credentials für verschiedene Umgebungen
+    - Speichern Sie Secrets nie in Git
+  </Accordion>
+</AccordionGroup>
+
+### Credential-Storage
+
+<CardGroup cols={2}>
+  <Card title="Automate Credential Store" icon="vault">
+    **Nutzen Sie den integrierten Credential Store:**
+    
+    - Sichere Speicherung
+    - Verschlüsselt
+    - Zugriffskontrolle
+  </Card>
+  <Card title="External Secret Manager" icon="key">
+    **Für Enterprise:**
+    
+    - AWS Secrets Manager
+    - HashiCorp Vault
+    - Azure Key Vault
+  </Card>
+</CardGroup>
+
+## Datenverschlüsselung
+
+### Sensible Daten verschlüsseln
+
+<CodeGroup>
+```json Verschlüsselte Daten
+{
+  "sensitiveFields": [
+    "password",
+    "creditCard",
+    "ssn",
+    "apiKey"
+  ],
+  "encryption": {
+    "method": "AES-256",
+    "keyManagement": "Key Vault"
+  }
+}
+```
+
+```javascript Daten vor Übertragung verschlüsseln
+// Sensible Daten verschlüsseln
+const encryptedData = encrypt(
+  sensitiveData,
+  encryptionKey
+);
+
+// Verschlüsselte Daten übertragen
+await sendToAPI(encryptedData);
+```
+</CodeGroup>
+
+### HTTPS verwenden
+
+<Warning>
+**Immer HTTPS verwenden:**
+- Für alle API-Calls
+- Für Webhooks
+- Für Datenübertragung
+</Warning>
+
+## Zugriffskontrolle
+
+### Workflow-Berechtigungen
+
+<AccordionGroup>
+  <Accordion title="Berechtigungen setzen" icon="user-lock">
+    **Workflow-Zugriff konfigurieren:**
+    
+    1. Öffnen Sie Workflow-Einstellungen
+    2. Navigieren Sie zu "Permissions"
+    3. Setzen Sie Berechtigungen:
+    
+    ```
+    Owner: Vollzugriff
+    Editors: Bearbeiten, Ausführen
+    Viewers: Nur anzeigen
+    ```
+  </Accordion>
+
+  <Accordion title="Rollen-basierte Zugriffe" icon="users">
+    **Rollen definieren:**
+    
+    - **Admin:** Vollzugriff auf alle Workflows
+    - **Developer:** Erstellen und Bearbeiten von Workflows
+    - **Operator:** Ausführen von Workflows
+    - **Viewer:** Nur Anzeigen
+  </Accordion>
+</AccordionGroup>
+
+### Webhook-Sicherheit
+
+**Sichern Sie Webhooks:**
+
+<CodeGroup>
+```json Webhook-Sicherheit
+{
+  "authentication": {
+    "type": "bearer",
+    "token": "{{ $env.WEBHOOK_SECRET }}"
+  },
+  "validation": {
+    "signature": "HMAC-SHA256",
+    "timestamp": "check",
+    "nonce": "validate"
+  }
+}
+```
+
+```javascript Webhook-Validierung
+// Validiere Webhook-Signatur
+const signature = request.headers['x-signature'];
+const expectedSignature = calculateHMAC(
+  request.body,
+  webhookSecret
+);
+
+if (signature !== expectedSignature) {
+  return { status: 401, error: 'Invalid signature' };
+}
+```
+</CodeGroup>
+
+## Input-Validierung
+
+### Daten validieren
+
+<CodeGroup>
+```javascript Input-Validierung
+// Validiere E-Mail-Format
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(input.email)) {
+  throw new Error('Invalid email format');
+}
+
+// Validiere Datentypen
+if (typeof input.userId !== 'string') {
+  throw new Error('userId must be string');
+}
+
+// Validiere Wertebereich
+if (input.amount < 0 || input.amount > 10000) {
+  throw new Error('Amount out of range');
+}
+```
+</CodeGroup>
+
+### SQL-Injection verhindern
+
+<Warning>
+**Bei Datenbankabfragen:**
+- Verwenden Sie Parameterized Queries
+- Niemals User-Input direkt in SQL einfügen
+- Validieren Sie alle Inputs
+</Warning>
+
+<CodeGroup>
+```javascript Sicher (Parameterized)
+const query = 'SELECT * FROM users WHERE id = ?';
+const result = await db.query(query, [userId]);
+```
+
+```javascript Unsicher (SQL-Injection Risiko)
+const query = `SELECT * FROM users WHERE id = ${userId}`;
+// NIEMALS SO!
+```
+</CodeGroup>
+
+## Audit-Logging
+
+### Wichtige Events protokollieren
+
+<CodeGroup>
+```json Audit-Log Format
+{
+  "timestamp": "2024-01-15T10:30:00Z",
+  "event": "workflow_executed",
+  "workflow": "welcome-email",
+  "user": "user@example.com",
+  "status": "success",
+  "executionTime": 2.5,
+  "ipAddress": "192.168.1.1"
+}
+```
+
+```json Sensible Events
+{
+  "events": [
+    "credential_accessed",
+    "workflow_modified",
+    "permission_changed",
+    "data_exported",
+    "error_occurred"
+  ]
+}
+```
+</CodeGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Principle of Least Privilege" icon="user-shield">
+    Gewähren Sie nur die minimal notwendigen Berechtigungen.
+  </Card>
+  <Card title="Regelmäßige Audits" icon="file-invoice">
+    Führen Sie regelmäßige Sicherheitsaudits durch.
+  </Card>
+  <Card title="Credential Rotation" icon="rotate">
+    Rotieren Sie Credentials regelmäßig.
+  </Card>
+  <Card title="Security Updates" icon="shield">
+    Halten Sie Automate und Dependencies aktuell.
+  </Card>
+  <Card title="Backup-Sicherheit" icon="floppy-disk">
+    Verschlüsseln Sie Backups und schützen Sie sie.
+  </Card>
+  <Card title="Monitoring" icon="eye">
+    Überwachen Sie auf verdächtige Aktivitäten.
+  </Card>
+</CardGroup>
+
+## Sicherheits-Checkliste
+
+<Check>
+- [ ] Alle Credentials sind in Environment Variables gespeichert
+- [ ] Keine hardcodierten Secrets im Code
+- [ ] HTTPS wird für alle Verbindungen verwendet
+- [ ] Input-Validierung ist implementiert
+- [ ] Zugriffskontrollen sind konfiguriert
+- [ ] Audit-Logging ist aktiviert
+- [ ] Backups sind verschlüsselt
+- [ ] Security Updates werden regelmäßig installiert
+</Check>
+
+## Häufige Sicherheitsfehler
+
+<AccordionGroup>
+  <Accordion title="Hardcodierte Credentials" icon="triangle-exclamation">
+    **Problem:** Credentials sind direkt im Code
+    
+    **Lösung:**
+    - Verwenden Sie Environment Variables
+    - Nutzen Sie Credential Store
+    - Niemals in Git committen
+  </Accordion>
+
+  <Accordion title="Unverschlüsselte Verbindungen" icon="unlock">
+    **Problem:** HTTP statt HTTPS verwendet
+    
+    **Lösung:**
+    - Immer HTTPS verwenden
+    - Validiere SSL-Zertifikate
+    - Nutzen Sie TLS 1.2+
+  </Accordion>
+
+  <Accordion title="Fehlende Input-Validierung" icon="filter">
+    **Problem:** User-Input wird nicht validiert
+    
+    **Lösung:**
+    - Validiere alle Inputs
+    - Nutzen Sie Whitelisting
+    - Sanitize User-Input
+  </Accordion>
+</AccordionGroup>
+
+---
+
+<Note>
+**Weiterführende Themen:** Lesen Sie auch unsere Seiten zu [Compliance & Security](/compliance-security/concept) für weitere Sicherheitsrichtlinien.
+</Note>
+

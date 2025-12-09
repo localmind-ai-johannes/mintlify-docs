@@ -1,0 +1,665 @@
+---
+title: "Automate Basics"
+description: "Grundlagen der Automatisierung mit Automate in Localmind"
+icon: "gears"
+---
+
+**Automate** ist die Workflow-Automatisierungsplattform von Localmind. Mit Automate können Sie komplexe Workflows erstellen, die Ihre KI-Agenten nahtlos mit anderen Systemen verbinden. Sie ermöglicht es Ihnen, visuelle Workflows zu erstellen, die verschiedene Dienste, APIs und Ihre Localmind-Agenten miteinander verbinden.
+
+<CardGroup cols={2}>
+  <Card
+    title="Visuelle Workflows"
+    icon="diagram-project"
+  >
+    Erstellen Sie komplexe Automatisierungen durch einfaches Verbinden von Nodes – ohne Code zu schreiben.
+  </Card>
+  <Card
+    title="KI-Integration"
+    icon="brain"
+  >
+    Nutzen Sie Ihre Localmind-Agenten direkt in Ihren Workflows für intelligente Entscheidungen.
+  </Card>
+  <Card
+    title="Hunderte von Integrationen"
+    icon="puzzle-piece"
+  >
+    Verbinden Sie sich mit über 400+ Apps und Diensten wie Slack, Google Sheets, APIs und mehr.
+  </Card>
+  <Card
+    title="Self-Hosted Option"
+    icon="server"
+  >
+    Behalten Sie die volle Kontrolle über Ihre Daten mit Self-Hosting-Optionen.
+  </Card>
+</CardGroup>
+
+## Erste Schritte
+
+### Zugriff auf Automate
+
+1. **Navigieren Sie zum Automate-Bereich** in Ihrem Localmind-Dashboard
+2. **Klicken Sie auf "Neuer Workflow"** um Ihren ersten Workflow zu erstellen
+3. **Wählen Sie eine Vorlage** oder starten Sie mit einem leeren Workflow
+
+<Tip>
+  Wenn Sie neu bei Automate sind, beginnen Sie mit einer der vorgefertigten Vorlagen, um die Konzepte zu verstehen.
+</Tip>
+
+## Grundkonzepte
+
+### Nodes (Knoten)
+
+**Nodes** sind die Bausteine Ihrer Workflows. Jeder Node repräsentiert eine Aktion oder einen Schritt in Ihrem Automatisierungsprozess.
+
+<AccordionGroup>
+  <Accordion title="Trigger Nodes" icon="play">
+    **Trigger Nodes** starten Ihren Workflow automatisch:
+    
+    - **Webhook**: Empfängt HTTP-Anfragen
+    - **Schedule**: Zeitbasierte Ausführung (Cron)
+    - **Manual**: Manuelle Ausführung
+    - **Email**: E-Mail-basierte Trigger
+    
+    <CodeGroup>
+    ```json Webhook Beispiel
+    {
+      "method": "POST",
+      "path": "/webhook/trigger",
+      "responseMode": "responseNode"
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Action Nodes" icon="bolt">
+    **Action Nodes** führen Operationen aus:
+    
+    - **HTTP Request**: API-Aufrufe
+    - **Set**: Daten setzen/transformieren
+    - **IF**: Bedingte Logik
+    - **Switch**: Multi-Branch-Logik
+    - **Localmind Agent**: KI-Agenten aufrufen
+    
+    <CodeGroup>
+    ```json HTTP Request Beispiel
+    {
+      "method": "GET",
+      "url": "https://api.example.com/data",
+      "authentication": "genericCredentialType",
+      "options": {}
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Localmind Agent Node" icon="robot">
+    Der **Localmind Agent Node** integriert Ihre KI-Agenten direkt in Workflows:
+    
+    - Wählen Sie einen Agenten aus Ihrer Agent-Bibliothek
+    - Übergeben Sie Daten als Kontext
+    - Erhalten Sie strukturierte Antworten
+    - Nutzen Sie die Antworten für weitere Workflow-Schritte
+    
+    <CodeGroup>
+    ```json Agent Node Konfiguration
+    {
+      "agentId": "agent_123abc",
+      "input": "{{ $json.userQuery }}",
+      "context": {
+        "userId": "{{ $json.userId }}",
+        "sessionId": "{{ $json.sessionId }}"
+      },
+      "options": {
+        "temperature": 0.7,
+        "maxTokens": 500
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+</AccordionGroup>
+
+### Workflow-Struktur
+
+Ein typischer Workflow folgt diesem Muster:
+
+```
+Trigger → Datenverarbeitung → Agent-Aufruf → Aktion → Ausgabe
+```
+
+<Steps>
+  <Step title="Workflow erstellen">
+    1. Klicken Sie auf **"Neuer Workflow"**
+    2. Geben Sie einen Namen ein (z.B. "Kundenanfrage verarbeiten")
+    3. Wählen Sie einen Trigger-Node aus
+    
+    <Tip>
+      Beginnen Sie mit einem **Manual Trigger** für Tests, später können Sie auf einen automatischen Trigger umstellen.
+    </Tip>
+  </Step>
+
+  <Step title="Nodes hinzufügen">
+    1. Klicken Sie auf das **"+"** Symbol
+    2. Suchen Sie nach dem gewünschten Node (z.B. "Localmind Agent")
+    3. Ziehen Sie den Node auf das Canvas
+    4. Verbinden Sie Nodes durch Ziehen von den Ausgängen zu den Eingängen
+    
+    <Warning>
+      Stellen Sie sicher, dass die Datenformate zwischen Nodes kompatibel sind. Verwenden Sie "Set" Nodes zur Datenumwandlung.
+    </Warning>
+  </Step>
+
+  <Step title="Node konfigurieren">
+    1. Klicken Sie auf einen Node, um ihn zu öffnen
+    2. Füllen Sie die erforderlichen Felder aus
+    3. Verwenden Sie **Expressions** (`{{ }}`) für dynamische Werte
+    4. Testen Sie mit **"Execute Node"**
+    
+    <CodeGroup>
+    ```javascript Expression Beispiel
+    // Zugriff auf vorherige Node-Daten
+    {{ $json.fieldName }}
+    
+    // Zugriff auf Workflow-Daten
+    {{ $workflow.staticData.value }}
+    
+    // Funktionen verwenden
+    {{ $now.toISO() }}
+    {{ $json.text.toUpperCase() }}
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Workflow aktivieren">
+    1. Klicken Sie auf **"Active"** Toggle oben rechts
+    2. Für Production: Konfigurieren Sie einen automatischen Trigger
+    3. Überwachen Sie Ausführungen im **"Executions"** Tab
+    
+    <Check>
+      Testen Sie Ihren Workflow gründlich, bevor Sie ihn aktivieren. Nutzen Sie die "Test Workflow" Funktion.
+    </Check>
+  </Step>
+</Steps>
+
+## Praktisches Beispiel: E-Mail-zu-Agent-Workflow
+
+Lassen Sie uns einen einfachen Workflow erstellen, der E-Mails empfängt, sie an einen Localmind-Agenten weiterleitet und eine Antwort sendet.
+
+### Workflow-Struktur
+
+```
+Email Trigger → Set Node → Localmind Agent → HTTP Request (Send Email)
+```
+
+### Schritt-für-Schritt Anleitung
+
+<AccordionGroup>
+  <Accordion title="1. Email Trigger konfigurieren" icon="envelope">
+    **IMAP Email Trigger** einrichten:
+    
+    1. Node hinzufügen: **"IMAP Email"**
+    2. Credentials konfigurieren (IMAP-Server, Benutzername, Passwort)
+    3. Polling-Intervall setzen (z.B. jede Minute)
+    4. Filter konfigurieren (optional): Nur E-Mails von bestimmten Absendern
+    
+    <CodeGroup>
+    ```json IMAP Konfiguration
+    {
+      "mailbox": "INBOX",
+      "options": {
+        "allowUnauthorizedCerts": false
+      },
+      "format": "simple"
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="2. Daten vorbereiten (Set Node)" icon="pen-to-square">
+    **Set Node** verwenden, um Daten für den Agenten zu strukturieren:
+    
+    1. Node hinzufügen: **"Set"**
+    2. Felder setzen:
+       - `emailSubject`: `{{ $json.subject }}`
+       - `emailBody`: `{{ $json.textPlain }}`
+       - `senderEmail`: `{{ $json.from.value[0].address }}`
+       - `timestamp`: `{{ $now.toISO() }}`
+    
+    <CodeGroup>
+    ```json Set Node Konfiguration
+    {
+      "values": {
+        "emailSubject": "={{ $json.subject }}",
+        "emailBody": "={{ $json.textPlain }}",
+        "senderEmail": "={{ $json.from.value[0].address }}",
+        "timestamp": "={{ $now.toISO() }}"
+      },
+      "options": {}
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="3. Localmind Agent aufrufen" icon="robot">
+    **Localmind Agent Node** konfigurieren:
+    
+    1. Node hinzufügen: **"Localmind Agent"**
+    2. Agent auswählen (z.B. "E-Mail-Assistent")
+    3. Prompt erstellen:
+    
+    ```
+    Du bist ein hilfreicher E-Mail-Assistent. 
+    Analysiere die folgende E-Mail und erstelle eine professionelle Antwort.
+    
+    Betreff: {{ $json.emailSubject }}
+    Nachricht: {{ $json.emailBody }}
+    Absender: {{ $json.senderEmail }}
+    ```
+    
+    4. Kontext-Daten übergeben (optional)
+    5. Ausgabe-Modus wählen (JSON oder Text)
+    
+    <CodeGroup>
+    ```json Agent Node Konfiguration
+    {
+      "agentId": "email_assistant_123",
+      "prompt": "Analysiere diese E-Mail: {{ $json.emailBody }}",
+      "context": {
+        "sender": "={{ $json.senderEmail }}",
+        "subject": "={{ $json.emailSubject }}"
+      },
+      "options": {
+        "temperature": 0.7,
+        "responseFormat": "json"
+      }
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="4. Antwort senden (HTTP Request)" icon="paper-plane">
+    **HTTP Request Node** für E-Mail-Versand:
+    
+    1. Node hinzufügen: **"HTTP Request"**
+    2. Methode: **POST**
+    3. URL: Ihre E-Mail-API (z.B. SendGrid, Mailgun)
+    4. Body konfigurieren:
+    
+    ```json
+    {
+      "to": "{{ $('Set').item.json.senderEmail }}",
+      "subject": "Re: {{ $('Set').item.json.emailSubject }}",
+      "text": "{{ $json.agentResponse }}"
+    }
+    ```
+    
+    <Tip>
+      Verwenden Sie `$('NodeName')` um auf Daten von vorherigen Nodes zuzugreifen.
+    </Tip>
+  </Accordion>
+</AccordionGroup>
+
+## Häufige Patterns
+
+### Pattern 1: Bedingte Verarbeitung
+
+Verwenden Sie **IF Nodes** für bedingte Logik:
+
+```
+Trigger → IF (Bedingung) → [True Branch] → [False Branch]
+```
+
+<CodeGroup>
+```javascript IF Bedingung Beispiel
+// Prüfe ob E-Mail wichtig ist
+{{ $json.importance === 'high' }}
+
+// Prüfe ob Betreff bestimmtes Keyword enthält
+{{ $json.subject.includes('URGENT') }}
+
+// Prüfe ob Absender in Whitelist
+{{ ['admin@company.com', 'support@company.com'].includes($json.senderEmail) }}
+```
+</CodeGroup>
+
+### Pattern 2: Parallele Verarbeitung
+
+Verwenden Sie mehrere ausgehende Verbindungen für parallele Ausführung:
+
+```
+Trigger → [Branch 1] → Agent 1
+       → [Branch 2] → Agent 2
+       → [Branch 3] → Agent 3
+```
+
+### Pattern 3: Error Handling
+
+Implementieren Sie Fehlerbehandlung mit **Error Trigger**:
+
+```
+Workflow → Try/Catch → Error Trigger → Notification
+```
+
+<Warning>
+  Immer Error Handling implementieren! Nutzen Sie den "Error Trigger" Node für robuste Workflows.
+</Warning>
+
+## Best Practices
+
+Diese Best Practices basieren auf bewährten Methoden für die Entwicklung professioneller, wartbarer Automate-Workflows. Sie helfen Ihnen, effiziente und zuverlässige Automatisierungen zu erstellen.
+
+### 1. Use Case First, Workflow Second
+
+Beginnen Sie mit der Problemdefinition, bevor Sie mit der Workflow-Implementierung starten. Dieser Ansatz stellt sicher, dass der Workflow sich an Ihre Anforderungen anpasst, nicht umgekehrt.
+
+<Steps>
+  <Step title="Geschäftsproblem definieren">
+    Formulieren Sie das zu lösende Problem in klaren, geschäftlichen Begriffen.
+    
+    **Beispiel:** "Automatische Kategorisierung von Support-E-Mails mit Weiterleitung dringender Anfragen an das Support-Team."
+  </Step>
+
+  <Step title="Input und Output spezifizieren">
+    Definieren Sie präzise die erwarteten Eingabedaten und das gewünschte Ausgabeformat.
+    
+    **Input:** E-Mail mit Betreff, Absender, Inhalt
+    **Output:** Kategorisierung (dringend/normal) mit entsprechender Weiterleitung
+  </Step>
+
+  <Step title="Logische Schritte identifizieren">
+    Zerlegen Sie den Prozess in 3-5 logische Verarbeitungsschritte.
+    
+    1. E-Mail empfangen
+    2. Mit Agent analysieren
+    3. Kategorisierung durchführen
+    4. Bei "dringend" → Benachrichtigung senden
+  </Step>
+
+  <Step title="Node-Auswahl">
+    Wählen Sie die erforderlichen Nodes basierend auf den definierten Schritten aus.
+  </Step>
+</Steps>
+
+<Tip>
+Der Workflow sollte sich an Ihren Use Case anpassen. Beginnen Sie mit einer einfachen Implementierung und iterieren Sie basierend auf den Ergebnissen.
+</Tip>
+
+### 2. Vorlagen und bestehende Lösungen nutzen
+
+Vor der Implementierung eines neuen Workflows sollten Sie zunächst nach bestehenden Vorlagen und ähnlichen Lösungen suchen. Dies beschleunigt die Entwicklung und reduziert Fehler.
+
+<CardGroup cols={2}>
+  <Card title="Community-Vorlagen" icon="users">
+    Durchsuchen Sie die Automate-Vorlagenbibliothek und Community-Beispiele für ähnliche Use Cases.
+  </Card>
+  <Card title="Use Case Recherche" icon="magnifying-glass">
+    Recherchieren Sie nach dokumentierten Automatisierungen für vergleichbare Anforderungen.
+  </Card>
+</CardGroup>
+
+**Vorteile:**
+- Schnellere Entwicklung durch Wiederverwendung bewährter Patterns
+- Entdeckung neuer Nodes und Implementierungsansätze
+- Vermeidung bekannter Fehlerquellen
+
+### 3. Data Flow Principle verstehen
+
+Jeder Automate-Workflow folgt dem grundlegenden Prinzip: **Input → Transform → Output**
+
+**Häufig verwendete Datenquellen:**
+- Eigene Datenbanken (Airtable, Google Sheets, Supabase)
+- Öffentliche APIs (HTTP Request Node, dedizierte API-Nodes)
+
+**Empfohlener Workflow für HTTP Request Nodes:**
+
+<Steps>
+  <Step title="cURL-Befehl aus API-Dokumentation extrahieren">
+    Kopieren Sie den cURL-Befehl aus der offiziellen API-Dokumentation.
+  </Step>
+
+  <Step title="In Postman validieren">
+    Importieren Sie den Request in Postman und testen Sie ihn mit realen Parametern.
+  </Step>
+
+  <Step title="Funktionalität verifizieren">
+    Stellen Sie sicher, dass der Request mit Ihrem spezifischen Use Case funktioniert.
+  </Step>
+
+  <Step title="Nach Automate übertragen">
+    Übertragen Sie den validierten Request nach Automate.
+  </Step>
+</Steps>
+
+<Tip>
+Postman ist ein wertvolles Tool für die API-Entwicklung und wird von professionellen Entwicklern häufig verwendet. Es erleichtert das Testen und Debugging von API-Requests erheblich.
+</Tip>
+
+### 4. Kern-Nodes beherrschen
+
+Die meisten Workflows können mit einer überschaubaren Anzahl von Nodes implementiert werden. Konzentrieren Sie sich zunächst auf diese Kern-Nodes:
+
+**Datenbereinigung und Transformation:**
+- **Set/Edit Fields:** Spalten extrahieren, Datentypen konvertieren, Datenstrukturen anpassen
+- **Filter:** Ungültige Datensätze entfernen (null-Werte, Duplikate, Formatfehler)
+- **Merge:** Spalten hinzufügen oder Datensätze kombinieren
+- **Code:** Komplexe Transformationen, die mit Standard-Nodes nicht möglich sind
+- **IF:** Bedingte Verarbeitungslogik implementieren
+
+**KI-Verarbeitung:**
+- **Localmind Agent:** Für die meisten KI-basierten Aufgaben
+
+**Typischer Workflow-Pattern:**
+```
+HTTP Request → Set (Datenbereinigung) → Filter (Validierung) → 
+Agent (Analyse) → Set (Output-Formatierung) → Datenbank-Insert
+```
+
+<Tip>
+Für Code-Nodes können Sie KI-Assistenten verwenden, um Code basierend auf Input-Datenstruktur und gewünschtem Output zu generieren. Dies beschleunigt die Entwicklung komplexer Transformationen.
+</Tip>
+
+### 5. Node-Outputs pinnen für effizientes Testing
+
+Das Pinnen von Node-Outputs ermöglicht es, nachgelagerte Nodes zu testen, ohne den gesamten Workflow erneut auszuführen. Dies spart Zeit und reduziert Kosten bei API-Calls und KI-Verarbeitung.
+
+<Steps>
+  <Step title="Workflow initial ausführen">
+    Führen Sie den Workflow einmal vollständig aus, um echte Daten zu generieren.
+  </Step>
+
+  <Step title="Outputs pinnen">
+    Klicken Sie auf das Pin-Icon bei jedem Node-Output, den Sie für Tests wiederverwenden möchten.
+  </Step>
+
+  <Step title="Gepinnte Daten anpassen">
+    Bearbeiten Sie gepinnte Daten, um verschiedene Test-Szenarien zu simulieren, einschließlich Edge Cases.
+  </Step>
+
+  <Step title="Downstream-Nodes testen">
+    Testen Sie nachgelagerte Nodes mit gepinnten Daten, ohne erneute API-Calls oder KI-Verarbeitung.
+  </Step>
+</Steps>
+
+<Warning>
+**Kostenoptimierung:** Ein einzelner Agent-Node-Test ohne Pinning kann mehr als $0.10 kosten. Bei wiederholten Tests summieren sich diese Kosten erheblich. Pinnen Sie Outputs immer für Testzwecke.
+</Warning>
+
+### 6. Sub-Workflows für modulare Architektur
+
+Komplexe Workflows sollten in wiederverwendbare Sub-Workflows aufgeteilt werden. Dies verbessert die Wartbarkeit, Testbarkeit und Wiederverwendbarkeit.
+
+**Empfohlene Struktur:**
+- Haupt-Workflows enthalten maximal 4-6 Nodes
+- Häufig verwendete Funktionalität wird in Sub-Workflows abstrahiert
+- Sub-Workflows fungieren als wiederverwendbare Komponenten
+
+**Organisationsstruktur:**
+
+<Steps>
+  <Step title="Components-Ordner anlegen">
+    Erstellen Sie einen dedizierten Ordner für wiederverwendbare Komponenten.
+  </Step>
+
+  <Step title="Sub-Workflows entwickeln">
+    Entwickeln Sie Sub-Workflows für häufige Aufgaben:
+    - Datenbereinigung und Validierung
+    - Error Handling und Retry-Logik
+    - Benachrichtigungen und Alerting
+  </Step>
+
+  <Step title="In Haupt-Workflows integrieren">
+    Referenzieren Sie Sub-Workflows in Ihren Haupt-Workflows.
+  </Step>
+</Steps>
+
+**Vorteile:**
+- Isolierte Fehlerbehebung: Fehler können schnell auf einen spezifischen Sub-Workflow eingegrenzt werden
+- Wiederverwendbarkeit: Komponenten können in verschiedenen Workflows verwendet werden
+- Bessere Übersichtlichkeit: Haupt-Workflows bleiben übersichtlich und nachvollziehbar
+
+### 7. Umfassendes Error Logging implementieren
+
+Ein robustes Error-Logging-System ermöglicht proaktive Fehlererkennung und schnelle Problemlösung. Implementieren Sie Logging, das alle relevanten Informationen erfasst.
+
+**Erforderliche Logging-Informationen:**
+
+<Check>
+- [ ] Fehlermeldung und Fehlertyp
+- [ ] Fehlerstelle (Node-Name, Execution-ID)
+- [ ] Input-Daten, die den Fehler verursacht haben
+- [ ] Zeitstempel und Workflow-Kontext
+- [ ] Retry-Versuche und deren Ergebnisse
+</Check>
+
+<Tip>
+Erfolgreiche Executions sollten ebenfalls geloggt werden. Dies ermöglicht die Erstellung von Berichten über Workflow-Performance und hilft bei der Identifizierung von Trends.
+</Tip>
+
+### 8. KI-Kostenüberwachung
+
+Unkontrollierte KI-Kosten können zu unerwarteten Ausgaben führen. Implementieren Sie ein System zur Überwachung und Kontrolle von KI-bezogenen Kosten.
+
+**Zu überwachende Metriken:**
+
+<CardGroup cols={2}>
+  <Card title="Token-Verbrauch" icon="hashtag">
+    Überwachen Sie den Token-Verbrauch pro Execution und identifizieren Sie Optimierungspotenziale.
+  </Card>
+  <Card title="Kosten pro Execution" icon="dollar-sign">
+    Berechnen Sie die Kosten pro Workflow-Ausführung für Budgetplanung und Kostentransparenz.
+  </Card>
+  <Card title="Ausgabenlimits" icon="gauge">
+    Implementieren Sie tägliche und monatliche Ausgabenlimits, um unerwartete Kosten zu vermeiden.
+  </Card>
+  <Card title="Performance-Metriken" icon="chart-line">
+    Überwachen Sie Model-Performance und Response-Qualität zur kontinuierlichen Optimierung.
+  </Card>
+</CardGroup>
+
+<Warning>
+**Kostentransparenz:** Unerwartete Kosten können das Vertrauen in Automatisierungen beeinträchtigen. Implementieren Sie von Anfang an ein transparentes Kosten-Tracking und kommunizieren Sie Kostenstrukturen klar.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="Testing" icon="flask" href="/automate/testing">
+    Testen Sie jeden Node einzeln bevor Sie den gesamten Workflow ausführen. Nutzen Sie "Execute Node".
+  </Card>
+  <Card title="Performance" icon="gauge" href="/automate/performance">
+    Vermeiden Sie unnötige API-Calls. Nutzen Sie Caching wo möglich. Setzen Sie angemessene Timeouts.
+  </Card>
+  <Card title="Sicherheit" icon="shield" href="/automate/sicherheit">
+    Speichern Sie Credentials sicher. Nutzen Sie Environment Variables für sensible Daten.
+  </Card>
+</CardGroup>
+
+## Debugging
+
+Erfahren Sie mehr über Debugging-Techniken und Fehlerbehebung in unserer [Debugging-Anleitung](/automate/debugging).
+
+### Häufige Probleme und Lösungen
+
+<AccordionGroup>
+  <Accordion title="Workflow läuft nicht" icon="triangle-exclamation">
+    **Mögliche Ursachen:**
+    - Workflow ist nicht aktiviert
+    - Trigger ist nicht konfiguriert
+    - Credentials fehlen oder sind ungültig
+    
+    **Lösung:**
+    1. Prüfen Sie den "Active" Status
+    2. Überprüfen Sie Trigger-Konfiguration
+    3. Testen Sie Credentials einzeln
+  </Accordion>
+
+  <Accordion title="Daten werden nicht korrekt übergeben" icon="arrows-rotate">
+    **Mögliche Ursachen:**
+    - Falsche Expression-Syntax
+    - Datenformat-Inkompatibilität
+    - Node-Reihenfolge falsch
+    
+    **Lösung:**
+    1. Verwenden Sie `{{ $json.fieldName }}` für Datenzugriff
+    2. Prüfen Sie Datenformate zwischen Nodes
+    3. Nutzen Sie "Set" Nodes zur Datenumwandlung
+    4. Überprüfen Sie die Execution-Logs
+  </Accordion>
+
+  <Accordion title="Agent gibt keine Antwort" icon="robot">
+    **Mögliche Ursachen:**
+    - Agent-ID falsch
+    - Prompt-Format ungültig
+    - API-Limits erreicht
+    
+    **Lösung:**
+    1. Überprüfen Sie Agent-ID und Verfügbarkeit
+    2. Testen Sie Prompt direkt im Agent-Interface
+    3. Prüfen Sie API-Quotas und Limits
+    4. Überprüfen Sie Error-Logs im Agent-Node
+  </Accordion>
+</AccordionGroup>
+
+### Execution Logs nutzen
+
+1. Navigieren Sie zum **"Executions"** Tab
+2. Wählen Sie eine fehlgeschlagene Execution aus
+3. Klicken Sie auf jeden Node, um Input/Output zu sehen
+4. Überprüfen Sie Error-Messages für Details
+
+<Tip>
+  Aktivieren Sie "Save Data on Error" in Workflow-Einstellungen, um Debugging zu erleichtern.
+</Tip>
+
+## Nächste Schritte
+
+Nachdem Sie die Grundlagen verstanden haben, erkunden Sie:
+
+<CardGroup cols={2}>
+  <Card
+    title="Custom Nodes"
+    icon="puzzle-piece"
+    href="/automate/custom-nodes"
+  >
+    Erstellen Sie eigene Nodes für spezifische Anwendungsfälle.
+  </Card>
+  <Card
+    title="API Integration"
+    icon="code"
+    href="/administration-monitoring/api"
+  >
+    Integrieren Sie Automate in Ihre eigenen Anwendungen.
+  </Card>
+  <Card
+    title="Monitoring"
+    icon="chart-line"
+    href="/administration-monitoring/settings"
+  >
+    Überwachen Sie Ihre Workflows und optimieren Sie die Performance.
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+  **Brauchen Sie Hilfe?** Unser Support-Team hilft Ihnen gerne bei der Einrichtung Ihrer ersten Workflows. Kontaktieren Sie uns unter [support@localmind.ai](mailto:support@localmind.ai).
+</Note>
+

@@ -1,0 +1,313 @@
+---
+title: "Versionierung"
+description: "Workflow-Versionierung und Backup-Strategien für Automate"
+icon: "code-branch"
+---
+
+# Versionierung
+
+Eine solide Versionierungsstrategie ist essentiell für die Wartbarkeit und Zuverlässigkeit Ihrer Automate-Workflows.
+
+## Warum Versionierung wichtig ist
+
+<CardGroup cols={2}>
+  <Card title="Rückverfolgbarkeit" icon="clock-rotate-left">
+    Sie können Änderungen nachverfolgen und bei Problemen zu früheren Versionen zurückkehren.
+  </Card>
+  <Card title="Teamarbeit" icon="users">
+    Teams können parallel arbeiten ohne sich gegenseitig zu überschreiben.
+  </Card>
+  <Card title="Rollback" icon="rotate-left">
+    Bei Problemen können Sie schnell zu einer funktionierenden Version zurückkehren.
+  </Card>
+  <Card title="Audit" icon="file-invoice">
+    Versionierung ermöglicht Compliance und Audit-Trails.
+  </Card>
+</CardGroup>
+
+## Automate-Versionierung
+
+### Workflow-Versionen
+
+Automate speichert automatisch Versionen Ihrer Workflows:
+
+<AccordionGroup>
+  <Accordion title="Automatische Versionierung" icon="clock">
+    **Wie es funktioniert:**
+    
+    - Jede Änderung erstellt eine neue Version
+    - Versionen werden mit Timestamp gespeichert
+    - Sie können zwischen Versionen wechseln
+    - Alte Versionen bleiben verfügbar
+    
+    <Tip>
+      Automate speichert die letzten 50 Versionen automatisch.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Version anzeigen" icon="eye">
+    **So sehen Sie Versionen:**
+    
+    1. Öffnen Sie den Workflow
+    2. Klicken Sie auf **"Versions"** Tab
+    3. Sehen Sie alle gespeicherten Versionen
+    4. Wählen Sie eine Version zum Anzeigen
+    
+    <CodeGroup>
+    ```json Version Info
+    {
+      "version": "1.2.3",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "createdBy": "user@example.com",
+      "changes": "Added error handling for API calls"
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Version wiederherstellen" icon="rotate-left">
+    **So stellen Sie eine Version wieder her:**
+    
+    1. Öffnen Sie Versions-Historie
+    2. Wählen Sie die gewünschte Version
+    3. Klicken Sie auf **"Restore"**
+    4. Bestätigen Sie die Wiederherstellung
+    
+    <Warning>
+      Das Wiederherstellen überschreibt die aktuelle Version. Erstellen Sie vorher ein Backup!
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+## Git-basierte Versionierung
+
+### Workflows in Git speichern
+
+Für erweiterte Versionierung können Sie Workflows in Git exportieren:
+
+<Steps>
+  <Step title="Workflow exportieren">
+    1. Öffnen Sie den Workflow
+    2. Klicken Sie auf **"Export"**
+    3. Wählen Sie Format: **JSON**
+    4. Speichern Sie die Datei
+  </Step>
+
+  <Step title="In Git committen">
+    1. Erstellen Sie Repository-Struktur:
+    
+    ```
+    workflows/
+    ├── welcome-email.json
+    ├── order-processing.json
+    └── support-tickets.json
+    ```
+    
+    2. Committen Sie Änderungen:
+    
+    ```bash
+    git add workflows/
+    git commit -m "Update welcome email workflow"
+    git push
+    ```
+  </Step>
+
+  <Step title="Versionierung nutzen">
+    1. Verwenden Sie Git Tags für Releases:
+    
+    ```bash
+    git tag -a v1.0.0 -m "Initial workflow version"
+    git push --tags
+    ```
+    
+    2. Nutzen Sie Branches für Experimente:
+    
+    ```bash
+    git checkout -b feature/new-workflow
+    # Änderungen machen
+    git commit -m "Add new workflow feature"
+    ```
+  </Step>
+</Steps>
+
+### Git-Workflow-Struktur
+
+**Empfohlene Struktur:**
+
+```
+localmind-workflows/
+├── .gitignore
+├── README.md
+├── workflows/
+│   ├── production/
+│   │   ├── welcome-email.json
+│   │   └── order-processing.json
+│   ├── staging/
+│   │   └── welcome-email.json
+│   └── development/
+│       └── test-workflow.json
+├── scripts/
+│   ├── export-all.sh
+│   └── import-workflow.sh
+└── docs/
+    └── workflow-documentation.md
+```
+
+## Backup-Strategien
+
+### Automatische Backups
+
+<CardGroup cols={2}>
+  <Card title="Regelmäßige Exports" icon="clock">
+    **Tägliche/Wöchentliche Exports:**
+    
+    - Automatisieren Sie Workflow-Exports
+    - Speichern Sie in sicherem Speicher
+    - Behalten Sie mehrere Backup-Generationen
+  </Card>
+  <Card title="Vor wichtigen Änderungen" icon="floppy-disk">
+    **Manuelle Backups:**
+    
+    - Exportieren Sie vor größeren Änderungen
+    - Erstellen Sie Snapshot vor Updates
+    - Testen Sie Backups regelmäßig
+  </Card>
+</CardGroup>
+
+### Backup-Skript Beispiel
+
+```bash
+#!/bin/bash
+# backup-workflows.sh
+
+BACKUP_DIR="./backups/$(date +%Y-%m-%d)"
+mkdir -p "$BACKUP_DIR"
+
+# Exportiere alle Workflows
+# (Dies würde über Automate API erfolgen)
+
+echo "Backups erstellt in: $BACKUP_DIR"
+```
+
+## Versionsnummern
+
+### Semantische Versionierung
+
+Verwenden Sie semantische Versionierung für Workflows:
+
+**Format:** `MAJOR.MINOR.PATCH`
+
+- **MAJOR:** Breaking Changes
+- **MINOR:** Neue Features, rückwärtskompatibel
+- **PATCH:** Bugfixes
+
+**Beispiele:**
+- `1.0.0` - Initial Release
+- `1.1.0` - Neue Features hinzugefügt
+- `1.1.1` - Bugfix
+- `2.0.0` - Breaking Changes
+
+### Versions-Tags in Git
+
+```bash
+# Major Release
+git tag -a v2.0.0 -m "Major update with breaking changes"
+
+# Minor Release
+git tag -a v1.1.0 -m "Added new features"
+
+# Patch Release
+git tag -a v1.0.1 -m "Fixed critical bug"
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Regelmäßige Backups" icon="floppy-disk">
+    Erstellen Sie regelmäßige Backups, besonders vor größeren Änderungen.
+  </Card>
+  <Card title="Commit-Messages" icon="message">
+    Verwenden Sie aussagekräftige Commit-Messages, die Änderungen beschreiben.
+  </Card>
+  <Card title="Tags verwenden" icon="tag">
+    Nutzen Sie Git Tags für wichtige Releases und Meilensteine.
+  </Card>
+  <Card title="Dokumentation" icon="file-lines">
+    Dokumentieren Sie Versionsänderungen in CHANGELOG.md.
+  </Card>
+</CardGroup>
+
+## CHANGELOG Beispiel
+
+```markdown
+# Changelog
+
+## [2.0.0] - 2024-01-15
+
+### Breaking Changes
+- Workflow-Struktur geändert: Neue Node-Reihenfolge erforderlich
+- API-Endpunkt geändert: Migration erforderlich
+
+### Added
+- Neue Error-Handling-Logik
+- Retry-Mechanismus für API-Calls
+- Performance-Monitoring
+
+### Changed
+- Verbesserte Datenvalidierung
+- Optimierte API-Call-Reihenfolge
+
+### Fixed
+- Bug bei Timeout-Behandlung
+- Fehlerhafte Daten-Transformation behoben
+
+## [1.1.0] - 2024-01-01
+
+### Added
+- Neue E-Mail-Templates
+- Erweiterte Logging-Funktionen
+```
+
+## Migration zwischen Versionen
+
+### Upgrade-Strategie
+
+<Steps>
+  <Step title="Backup erstellen">
+    Exportieren Sie die aktuelle Version als Backup.
+  </Step>
+
+  <Step title="Änderungen prüfen">
+    Lesen Sie CHANGELOG und prüfen Sie Breaking Changes.
+  </Step>
+
+  <Step title="Test-Umgebung">
+    Testen Sie neue Version in Staging/Development.
+  </Step>
+
+  <Step title="Migration">
+    Führen Sie Migration in Production durch.
+  </Step>
+
+  <Step title="Validierung">
+    Überprüfen Sie, dass alles funktioniert.
+  </Step>
+</Steps>
+
+## Checkliste
+
+<Check>
+- [ ] Workflows sind in Git versioniert
+- [ ] Regelmäßige Backups werden erstellt
+- [ ] Versionsnummern werden verwendet
+- [ ] CHANGELOG wird gepflegt
+- [ ] Migration-Strategien sind dokumentiert
+- [ ] Backup-Wiederherstellung wurde getestet
+</Check>
+
+---
+
+<Note>
+**Weiterführende Themen:** Lesen Sie auch unsere Seiten zu [Dokumentation](/automate/documentation) und [Sicherheit](/automate/sicherheit) für weitere Best Practices.
+</Note>
+

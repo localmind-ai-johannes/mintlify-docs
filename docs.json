@@ -1,14 +1,14 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "theme": "mint",
-  "name": "Localmind Documentation",
+  "theme": "maple",
+  "name": "Localmind Docs",
   "logo": {
-    "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
+    "dark": "/logo/lmbanner.png",
+    "light": "/logo/lmbanner.png"
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#6366F1",
+    "primary": "#1A1A1A",
     "light": "#818CF8",
     "dark": "#4F46E5"
   },
@@ -22,14 +22,112 @@
     "name": "Dashboard",
     "url": "https://app.localmind.ai"
   },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "cursor",
+      "vscode"
+    ]
+  },
+  "feedback": {
+    "suggestEdit": true,
+    "raiseIssue": true
+  },
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": false
+  },
   "navigation": {
     "tabs": [
       {
         "tab": "Dokumentation",
         "groups": [
           {
-            "group": "Willkommen",
-            "pages": ["introduction", "quickstart"]
+            "group": "Einführung",
+            "pages": ["intro-to-localmind"]
+          },
+          {
+            "group": "Quickstart",
+            "pages": [
+              "quickstart/first-login",
+              "quickstart/building-your-agent"
+            ]
+          },
+          {
+            "group": "Übersicht",
+            "pages": ["overview/dashboard"]
+          },
+          {
+            "group": "Capabilities",
+            "pages": [
+              "capabilities/use-cases",
+              "capabilities/user-stories"
+            ]
+          },
+          {
+            "group": "Pricing",
+            "pages": [
+              "pricing/pricing-tiers",
+              "pricing/hosting-options"
+            ]
+          },
+          {
+            "group": "Core Functions",
+            "pages": [
+              "core-functions/agents",
+              "core-functions/data"
+            ]
+          },
+          {
+            "group": "Prompting",
+            "pages": [
+              "prompting/overview",
+              "prompting/templates",
+              "prompting/reduce-hallucinations",
+              "prompting/use-examples",
+              "prompting/best-practices"
+            ]
+          },
+          {
+            "group": "Automate",
+            "pages": [
+              "automate/basics",
+              "automate/custom-nodes",
+              "automate/testing",
+              "automate/performance",
+              "automate/sicherheit",
+              "automate/debugging"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/skills",
+              "integrations/tools-mcp",
+              "integrations/publisher"
+            ]
+          },
+          {
+            "group": "Administration & Monitoring",
+            "pages": [
+              "administration-monitoring/api",
+              "administration-monitoring/user-role-management",
+              "administration-monitoring/vpn",
+              "administration-monitoring/custom-domains",
+              "administration-monitoring/settings"
+            ]
+          },
+          {
+            "group": "Compliance & Security",
+            "pages": [
+              "compliance-security/concept",
+              "compliance-security/resources"
+            ]
+          },
+          {
+            "group": "Workshops & Learning",
+            "pages": ["workshops-learning"]
           }
         ]
       }

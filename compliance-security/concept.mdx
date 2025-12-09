@@ -1,0 +1,831 @@
+---
+title: "Security Concept"
+description: "Umfassendes Sicherheitskonzept von Localmind - Defense in Depth Strategie"
+icon: "shield-halved"
+---
+
+# Security Concept 🛡️
+
+Localmind setzt auf eine mehrschichtige Sicherheitsstrategie (Defense in Depth), die Ihre Daten und Anwendungen auf allen Ebenen schützt – vom Netzwerk-Perimeter bis hin zur Anwendungsebene. Unser Sicherheitskonzept basiert auf acht zentralen Säulen, die zusammen ein robustes, mehrschichtiges Sicherheitssystem bilden:
+
+<CardGroup cols={2}>
+  <Card title="Netzwerkarchitektur & Isolation" icon="network-wired" href="#netzwerkarchitektur-isolation">
+    Multi-Layer-Firewall, VLAN-Segmentierung und strikte Netzwerktrennung
+  </Card>
+  <Card title="Infrastruktur & Host-Härtung" icon="server" href="#infrastruktur-host-hartung">
+    Gehärtete Systeme und physische Netzwerktrennung
+  </Card>
+  <Card title="Anwendungs- & VM-Sicherheit" icon="cube" href="#anwendungs-vm-sicherheit">
+    Zero-Inbound-Access und Service-Isolation
+  </Card>
+  <Card title="Datensicherheit & Backups" icon="database" href="#datensicherheit-backups">
+    Verschlüsselung-at-Rest und immutable Backups
+  </Card>
+  <Card title="Überwachung & Erkennung" icon="eye" href="#uberwachung-erkennung">
+    SIEM, EDR und File Integrity Monitoring
+  </Card>
+  <Card title="Identitäts- & Zugriffsmanagement" icon="user-shield" href="#identitats-zugriffsmanagement">
+    Least Privilege, MFA und Just-in-Time Access
+  </Card>
+  <Card title="Schwachstellen- & Patch-Management" icon="shield" href="#schwachstellen-patch-management">
+    Kontinuierliches Scanning und automatisiertes Patching
+  </Card>
+  <Card title="Governance & Compliance" icon="certificate" href="#governance-compliance">
+    ISO 27001 Zertifizierung und Datensouveränität
+  </Card>
+</CardGroup>
+
+---
+
+## Kategorie 1: Netzwerkarchitektur & Isolation
+
+Unsere Netzwerk-Infrastruktur ist so konzipiert, dass sie Angriffe bereits am Perimeter abwehrt und eine strikte Trennung zwischen allen Systemen gewährleistet, um die Ausbreitung von Bedrohungen zu verhindern.
+
+<CardGroup cols={2}>
+  <Card title="Multi-Layer-Firewall & WAF" icon="fire">
+    Jeglicher Datenverkehr durchläuft eine mehrstufige Firewall-Lösung mit Enterprise Web Application Firewall (WAF) auf Layer 7.
+  </Card>
+  <Card title="VLAN-Segmentierung" icon="diagram-project">
+    Jede Kundenumgebung wird in einem eigenen, logisch vollständig isolierten virtuellen Netzwerk (VLAN) betrieben.
+  </Card>
+  <Card title="Egress Filtering" icon="arrow-right">
+    Ausgehende Verbindungen werden standardmäßig blockiert, nur explizit definierte Ziele sind freigegeben.
+  </Card>
+  <Card title="End-to-End Verschlüsselung" icon="lock">
+    Die gesamte Kommunikation wird mit starken TLS-Protokollen verschlüsselt.
+  </Card>
+</CardGroup>
+
+### Maßnahmen im Detail
+
+<AccordionGroup>
+  <Accordion title="Multi-Layer-Firewall & Web Application Firewall (WAF)" icon="fire">
+    **Mehrstufige Perimeter-Abwehr:**
+    
+    Jeglicher Datenverkehr zu unseren Systemen durchläuft eine mehrstufige Firewall-Lösung. Eine vorgelagerte Enterprise Web Application Firewall (WAF) analysiert Anfragen auf Layer 7 und blockiert proaktiv gängige Web-Angriffe wie:
+    
+    - SQL-Injections
+    - Cross-Site-Scripting (XSS)
+    - OWASP Top-10-Bedrohungen
+    - DDoS-Angriffe
+    
+    Diese Angriffe werden bereits abgewehrt, bevor sie unsere Server erreichen.
+    
+    <Tip>
+      Die WAF wird kontinuierlich mit aktuellen Threat-Intelligence-Daten aktualisiert, um auch neuartige Angriffe zu erkennen.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Strikte VLAN-Segmentierung" icon="diagram-project">
+    **Digitale Inseln für maximale Isolation:**
+    
+    Jede Kundenumgebung wird in einem eigenen, logisch vollständig isolierten virtuellen Netzwerk (VLAN) betrieben. Es gibt standardmäßig keine Verbindung zwischen den VLANs verschiedener Kunden.
+    
+    **Vorteile:**
+    - Verhindert laterale Ausbreitung (Lateral Movement)
+    - Isoliert Kompromittierungen auf eine Instanz
+    - Erhöht die Gesamtsicherheit durch Redundanz
+    
+    <Warning>
+      Selbst im Falle einer Kompromittierung einer einzelnen Instanz können Angreifer nicht auf andere Kundenumgebungen zugreifen.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Kontrolle des ausgehenden Datenverkehrs (Egress Filtering)" icon="arrow-right">
+    **Whitelist-basierte Ausgangskontrolle:**
+    
+    Standardmäßig können alle ausgehenden Verbindungen von einer Kunden-VM ins Internet blockiert werden. Nur explizit definierte, notwendige Ziele werden auf einer Whitelist freigegeben:
+    
+    - Bestimmte KI-API-Endpunkte
+    - Software-Update-Server
+    - Legitime externe Services
+    
+    **Schutz vor:**
+    - Datenexfiltration
+    - Nachladen von Schadsoftware
+    - Command & Control Kommunikation
+    
+    <CodeGroup>
+    ```json Egress Filtering Beispiel
+    {
+      "allowedDestinations": [
+        "api.openai.com",
+        "api.anthropic.com",
+        "updates.ubuntu.com"
+      ],
+      "defaultPolicy": "deny",
+      "logging": "all_attempts"
+    }
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Verschlüsselte End-to-End-Kommunikation" icon="lock">
+    **Starke Verschlüsselung überall:**
+    
+    Die gesamte Kommunikation, sowohl extern ins Internet als auch intern zwischen unseren Systemkomponenten, wird ausnahmslos mit starken und aktuellen TLS-Protokollen verschlüsselt.
+    
+    **Sicherheitsmerkmale:**
+    - TLS 1.2+ wird erzwungen
+    - Sichere Cipher Suites
+    - Perfect Forward Secrecy
+    - Regelmäßige Zertifikatsrotation
+    
+    **Schutz vor:**
+    - Man-in-the-Middle-Angriffen
+    - Abhören von Daten
+    - Datenmanipulation während der Übertragung
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Kategorie 2: Infrastruktur & Host-Härtung
+
+Die physischen und virtuellen Server, die unsere Plattform betreiben, sind systematisch gehärtet, um ihre Angriffsfläche bestmöglich zu minimieren.
+
+<CardGroup cols={2}>
+  <Card title="Physische Netzwerktrennung" icon="network-wired">
+    Hypervisor-Hosts nutzen physisch getrennte Netzwerkschnittstellen für verschiedene Aufgaben.
+  </Card>
+  <Card title="Gehärtete Host-Systeme" icon="shield">
+    Alle Host-Systeme basieren auf gehärteten Linux Basis-Images mit CIS-Benchmark-Konformität.
+  </Card>
+  <Card title="Restriktive Zugriffskontrolle" icon="key">
+    Administrative Zugriffe sind streng limitiert und erfordern MFA.
+  </Card>
+</CardGroup>
+
+### Maßnahmen im Detail
+
+<AccordionGroup>
+  <Accordion title="Physische und logische Netzwerktrennung" icon="network-wired">
+    **Getrennte Netzwerkschnittstellen:**
+    
+    Hypervisor-Hosts nutzen physisch getrennte Netzwerkschnittstellen für verschiedene Aufgaben:
+    
+    - **Management-Netzwerk:** Für administrative Zugriffe
+    - **Cluster-Kommunikation:** Für Hypervisor-Kommunikation
+    - **VM-Datenverkehr:** Für Kunden-VMs
+    
+    **Sicherheitsvorteil:**
+    
+    Selbst im unwahrscheinlichen Fall einer Kompromittierung auf VM-Ebene ist kein Zugriff auf die kritische Management-Infrastruktur möglich.
+    
+    <Tip>
+      Diese Trennung verhindert, dass Angreifer von kompromittierten VMs auf die Virtualisierungs-Infrastruktur zugreifen können.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Gehärtete Host-Systeme" icon="shield">
+    **Minimierte Angriffsfläche:**
+    
+    Alle Host-Systeme basieren auf einem gehärteten Linux Basis-Image:
+    
+    - Nicht betriebsnotwendige Dienste entfernt
+    - Unnötige Softwarepakete deinstalliert
+    - Minimale Installation (Minimal Install)
+    
+    **Konfigurationsprüfung:**
+    
+    Konfigurationen werden regelmäßig gegen anerkannte Sicherheits-Benchmarks geprüft:
+    
+    - CIS (Center for Internet Security) Benchmarks
+    - STIG (Security Technical Implementation Guides)
+    - Automatisierte Compliance-Checks
+    
+    <Check>
+      Regelmäßige automatische Scans stellen sicher, dass die Konfiguration konform bleibt.
+    </Check>
+  </Accordion>
+
+  <Accordion title="Restriktive Zugriffskontrolle auf Hypervisor-Ebene" icon="key">
+    **Strenge Zugriffsbeschränkungen:**
+    
+    Der administrative Zugriff auf die Virtualisierungs-Hosts ist streng limitiert:
+    
+    - **Isoliertes Management-Netzwerk:** Zugriff nur aus dediziertem Netzwerk
+    - **IP-Whitelisting:** Nur autorisierte IP-Adressen erlaubt
+    - **Multi-Faktor-Authentifizierung:** Verpflichtend für alle Zugriffe
+    - **Just-in-Time Access:** Temporäre Berechtigungen bei Bedarf
+    
+    <Warning>
+      Jeder administrative Zugriff wird protokolliert und überwacht.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Kategorie 3: Anwendungs- und VM-Sicherheit
+
+Jede virtuelle Maschine (VM) ist eine eigene kleine Festung. Wir wenden moderne Sicherheitsprinzipien an, um die Anwendungen darin zu schützen.
+
+<CardGroup cols={2}>
+  <Card title="Zero-Inbound-Access" icon="ban">
+    Keine offenen Ports für SSH/RDP - Verwaltung über gesicherten Management-Agenten.
+  </Card>
+  <Card title="Service-Isolation" icon="cube">
+    Kritische Backend-Dienste lauschen nur auf localhost.
+  </Card>
+  <Card title="CI/CD-Sicherheit" icon="code-branch">
+    Automatisches Vulnerability-Scanning vor jedem Deployment.
+  </Card>
+</CardGroup>
+
+### Maßnahmen im Detail
+
+<AccordionGroup>
+  <Accordion title="Zero-Inbound-Access für VMs" icon="ban">
+    **Keine offenen Angriffsflächen:**
+    
+    Administrativer Fernzugriff via SSH oder RDP auf unsere Kunden-VMs ist standardmäßig deaktiviert und blockiert. Die gesamte Verwaltung erfolgt über einen proprietären Management-Agenten:
+    
+    - **Gesicherte ausgehende Verbindung:** Agent baut Verbindung zum Managementsystem auf
+    - **Keine offenen Ports:** Keine Angriffsfläche für Brute-Force-Angriffe
+    - **Outbound-only:** Nur ausgehende Verbindungen erlaubt
+    
+    **Vorteile:**
+    - Keine Angriffsfläche für Port-Scans
+    - Schutz vor Brute-Force-Angriffen
+    - Reduzierte Angriffsfläche um 90%+
+    
+    <Tip>
+      Diese Architektur folgt dem Prinzip "Assume Breach" - selbst wenn ein System kompromittiert wird, ist der Schaden begrenzt.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Service-Isolation auf Applikationsebene" icon="cube">
+    **Lokale Loopback-Isolation:**
+    
+    Kritische Backend-Dienste sind so konfiguriert, dass sie ausschließlich auf der lokalen Loopback-Schnittstelle (localhost) lauschen:
+    
+    - **PostgreSQL:** Nur localhost-Zugriff
+    - **Redis:** Nur localhost-Zugriff
+    - **Andere kritische Services:** Isoliert vom Netzwerk
+    
+    **Sicherheitsvorteil:**
+    
+    Diese Komponenten sind aus dem Netzwerk nicht direkt erreichbar, was das Risiko von direkten Angriffen drastisch reduziert.
+    
+    <CodeGroup>
+    ```yaml Service-Konfiguration Beispiel
+    postgresql:
+      listen_addresses: "127.0.0.1"  # Nur localhost
+      port: 5432
+      ssl: required
+    
+    redis:
+      bind: "127.0.0.1"  # Nur localhost
+      protected-mode: yes
+    ```
+    </CodeGroup>
+  </Accordion>
+
+  <Accordion title="Sicherheit in der CI/CD-Pipeline" icon="code-branch">
+    **Automatisches Vulnerability-Scanning:**
+    
+    Bereits während der Entwicklung und vor jedem Deployment werden unsere Anwendungscontainer und deren Abhängigkeiten automatisch auf bekannte Schwachstellen (CVEs) gescannt.
+    
+    **Prozess:**
+    
+    1. **Build-Phase:** Automatisches Scanning aller Dependencies
+    2. **Blockierung:** Builds mit kritischen Sicherheitslücken werden blockiert
+    3. **Priorisierung:** Nach CVSS-Score (Critical > High > Medium)
+    4. **Schnelle Updates:** Dependencies mit CVE-Scores High und Critical werden innerhalb 48h geupdated
+    
+    **Schutz vor:**
+    - Bekannten Schwachstellen in Dependencies
+    - Veralteten Bibliotheken
+    - Supply-Chain-Angriffen
+    
+    <Warning>
+      Builds mit kritischen CVEs gelangen nicht in die Produktivumgebung.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Kategorie 4: Datensicherheit, Storage und Backups
+
+Ihre Daten sind Ihr wertvollstes Gut. Wir schützen sie durch Verschlüsselung, Redundanz und ein krisensicheres Backup-Konzept.
+
+<CardGroup cols={2}>
+  <Card title="Encryption-at-Rest" icon="lock">
+    Hardwarebasierte AES-256-Verschlüsselung auf Festplattenebene.
+  </Card>
+  <Card title="Immutable Backups" icon="floppy-disk">
+    Unveränderliche, verschlüsselte Backups auf separatem System.
+  </Card>
+  <Card title="Ransomware-Schutz" icon="shield">
+    Backups können nicht gelöscht oder verschlüsselt werden.
+  </Card>
+</CardGroup>
+
+### Maßnahmen im Detail
+
+<AccordionGroup>
+  <Accordion title="Verschlüsselung im Ruhezustand (Encryption-at-Rest)" icon="lock">
+    **Hardwarebasierte Verschlüsselung:**
+    
+    Alle Kundendaten werden auf hochmodernem Enterprise-Storage gespeichert, der standardmäßig eine hardwarebasierte AES-256-Verschlüsselung auf Festplattenebene (Self-Encrypting Drives) einsetzt.
+    
+    **Sicherheitsmerkmale:**
+    - **AES-256:** Militärischer Verschlüsselungsstandard
+    - **Hardware-basiert:** Verschlüsselung auf Festplattenebene
+    - **Transparent:** Keine Performance-Einbußen
+    - **Automatisch:** Aktiv für alle Daten
+    
+    **Schutz:**
+    
+    Selbst bei einem physischen Diebstahl der Datenträger sind die darauf befindlichen Daten unlesbar und wertlos.
+    
+    <Tip>
+      Die Verschlüsselungsschlüssel werden in einem separaten, hochsicheren Key-Management-System gespeichert.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Unveränderliche (Immutable) und getrennte Backups" icon="floppy-disk">
+    **Ransomware-resistente Backups:**
+    
+    Wir erstellen regelmäßige, verschlüsselte Backups Ihrer Daten, die auf einem separaten, netzwerktechnisch und physisch getrennten Backup-System gespeichert werden.
+    
+    **Immutable Backups:**
+    
+    Diese Backups sind "immutable" (unveränderlich), was bedeutet:
+    
+    - Nach der Erstellung können sie nicht verändert werden
+    - Sie können nicht gelöscht werden (für definierten Zeitraum)
+    - Selbst mit Admin-Rechten nicht manipulierbar
+    - Schutz vor Ransomware und Datenmanipulation
+    
+    **Backup-Strategie:**
+    
+    - **Tägliche Backups:** Vollständige System-Backups
+    - **Inkrementelle Backups:** Stündliche Änderungen
+    - **Aufbewahrung:** 30 Tage täglich, 12 Monate monatlich
+    - **Geografische Redundanz:** Backups an mehreren Standorten
+    
+    <Warning>
+      Diese Immutability ist essentieller Schutz vor Ransomware-Angriffen.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Kategorie 5: Überwachung, Erkennung und Reaktion
+
+Wir überwachen unsere Systeme rund um die Uhr, um Anomalien und potenzielle Angriffe in Echtzeit zu erkennen und sofort darauf reagieren zu können.
+
+<CardGroup cols={2}>
+  <Card title="SIEM & Log-Management" icon="file-lines">
+    Zentrales Security Information and Event Management System.
+  </Card>
+  <Card title="File Integrity Monitoring" icon="file-shield">
+    Überwachung kritischer Systemdateien auf Änderungen.
+  </Card>
+  <Card title="Endpoint Detection & Response" icon="shield-halved">
+    Echtzeit-Überwachung von Prozessen und Systemaufrufen.
+  </Card>
+  <Card title="Kernel-Level-Auditing" icon="eye">
+    Lückenlose Protokollierung aller sicherheitsrelevanten Aktivitäten.
+  </Card>
+</CardGroup>
+
+### Maßnahmen im Detail
+
+<AccordionGroup>
+  <Accordion title="Zentrales SIEM und Log-Management" icon="file-lines">
+    **Zentrale Sicherheitsüberwachung:**
+    
+    Ein Security Information and Event Management (SIEM) System sammelt und korreliert sicherheitsrelevante Logs und Events von allen Systemen:
+    
+    - Firewalls
+    - Server
+    - Anwendungen
+    - Netzwerkgeräte
+    
+    **Funktionen:**
+    
+    - **Korrelation:** Verbindet Events aus verschiedenen Quellen
+    - **Verhaltensanalyse:** Erkennt Anomalien und verdächtige Muster
+    - **Echtzeit-Alarme:** Sofortige Benachrichtigung bei Bedrohungen
+    - **Forensische Analyse:** Detaillierte Untersuchung von Vorfällen
+    
+    <Tip>
+      Das SIEM nutzt Machine Learning, um auch neuartige Angriffsmuster zu erkennen.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="File Integrity Monitoring (FIM)" icon="file-shield">
+    **Schutz vor Manipulation:**
+    
+    Ein Agent auf jeder VM überwacht kritische System- und Anwendungsdateien auf unerwartete Änderungen:
+    
+    - System-Binaries
+    - Konfigurationsdateien
+    - Anwendungsdateien
+    - Skripte
+    
+    **Reaktion:**
+    
+    Jegliche Manipulation, die auf eine Kompromittierung oder eine unautorisierte Konfigurationsänderung hindeuten könnte, löst sofort einen Alarm aus.
+    
+    <Warning>
+      Unerwartete Änderungen an kritischen Dateien werden sofort gemeldet und untersucht.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Endpoint Detection & Response (EDR)" icon="shield-halved">
+    **Erweiterte Bedrohungserkennung:**
+    
+    Neben der Log-Analyse setzen wir eine EDR-Lösung ein, die das Verhalten von Prozessen und Systemaufrufen in Echtzeit überwacht.
+    
+    **Erkennt:**
+    
+    - Komplexe, dateilose Angriffe
+    - Zero-Day-Malware
+    - Advanced Persistent Threats (APT)
+    - Lateral Movement
+    
+    **Vorteile:**
+    
+    Mithilfe von automatisierter Verhaltensanalyse erkennt sie auch Angriffe, die von traditionellen Scannern übersehen werden.
+  </Accordion>
+
+  <Accordion title="Lückenloses Kernel-Level-Auditing" icon="eye">
+    **Vollständige Transparenz:**
+    
+    Ein Auditing-Framework auf Betriebssystemebene protokolliert jeden sicherheitsrelevanten Systemaufruf:
+    
+    - Dateizugriffe
+    - Prozessstarts
+    - Netzwerkverbindungen
+    - Systemaufrufe
+    - Berechtigungsänderungen
+    
+    **Forensische Aufklärung:**
+    
+    Diese unveränderbaren Protokolle ermöglichen eine lückenlose forensische Aufklärung jeder Aktivität auf einem System.
+    
+    <Check>
+      Alle Audit-Logs sind unveränderlich und werden langfristig archiviert.
+    </Check>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Kategorie 6: Identitäts- und Zugriffsmanagement (IAM)
+
+Der menschliche Faktor ist oft die größte Schwachstelle. Wir minimieren dieses Risiko durch strenge Zugriffskontrollen und klare Prozesse.
+
+<CardGroup cols={2}>
+  <Card title="Least Privilege & RBAC" icon="user-lock">
+    Minimal notwendige Berechtigungen für jede Rolle.
+  </Card>
+  <Card title="4-Augen-Prinzip" icon="users">
+    Kritische Operationen erfordern zwei autorisierte Personen.
+  </Card>
+  <Card title="Multi-Faktor-Authentifizierung" icon="key">
+    MFA für alle administrativen Zugriffe verpflichtend.
+  </Card>
+  <Card title="Just-in-Time Privilegien" icon="clock">
+    Temporäre Berechtigungen nur bei Bedarf.
+  </Card>
+</CardGroup>
+
+### Maßnahmen im Detail
+
+<AccordionGroup>
+  <Accordion title="Prinzip der geringsten Rechte (Least Privilege) & RBAC" icon="user-lock">
+    **Minimale Berechtigungen:**
+    
+    Jeder Mitarbeiter und jedes technische Systemkonto erhält nur die minimal notwendigen Berechtigungen, um seine definierte Aufgabe zu erfüllen (Role-Based Access Control).
+    
+    **Rollenbeispiele:**
+    
+    - **Developer:** Kann Code deployen, aber keine Infrastruktur ändern
+    - **Operator:** Kann Systeme überwachen, aber keine Konfiguration ändern
+    - **Admin:** Volle Berechtigung, aber nur mit 4-Augen-Prinzip
+    
+    **Keine universellen Admin-Konten:**
+    
+    Es gibt keine universellen Administratoren-Konten für den Regelbetrieb.
+    
+    <Tip>
+      Regelmäßige Access-Reviews stellen sicher, dass Berechtigungen aktuell und angemessen bleiben.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="4-Augen-Prinzip für kritische Operationen" icon="users">
+    **Zwei-Personen-Autorisierung:**
+    
+    Änderungen an sensiblen Systemen erfordern die explizite Freigabe durch eine zweite, autorisierte Person:
+    
+    - Firewall-Regeln ändern
+    - Produktions-Deployments
+    - Backup-Wiederherstellungen
+    - Zugriffsrechte ändern
+    
+    **Vorteile:**
+    
+    - Verhindert unautorisierte Einzelaktionen
+    - Reduziert Fehlerrisiko
+    - Erhöht Sicherheit durch Kontrolle
+    
+    <Warning>
+      Kritische Operationen können nicht von einer einzelnen Person durchgeführt werden.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Multi-Faktor-Authentifizierung (MFA) für alle Zugriffe" icon="key">
+    **Verpflichtende Zwei-Faktor-Authentifizierung:**
+    
+    Jeder administrative Zugriff auf unsere internen Systeme, Cloud-Plattformen und Management-Tools ist ausnahmslos durch eine Multi-Faktor-Authentifizierung abgesichert:
+    
+    - Hardware-Token (FIDO2/WebAuthn)
+    - TOTP-Apps (Time-based One-Time Password)
+    - SMS-Backup (nur als Fallback)
+    
+    **Schutz vor:**
+    
+    - Passwort-Diebstahl
+    - Phishing-Angriffen
+    - Credential-Stuffing
+    
+    <Check>
+      MFA ist für alle administrativen Zugriffe verpflichtend und kann nicht deaktiviert werden.
+    </Check>
+  </Accordion>
+
+  <Accordion title="Just-in-Time (JIT) Privilegien" icon="clock">
+    **Temporäre Berechtigungen:**
+    
+    Erhöhte Berechtigungen werden nicht permanent vergeben, sondern nur bei Bedarf für einen begrenzten Zeitraum angefordert und genehmigt (Just-in-Time-Access).
+    
+    **Prozess:**
+    
+    1. **Anfrage:** Mitarbeiter fordert erhöhte Berechtigung an
+    2. **Genehmigung:** Vorgesetzter genehmigt die Anfrage
+    3. **Aktivierung:** Berechtigung wird für definierten Zeitraum aktiviert
+    4. **Automatische Deaktivierung:** Nach Ablauf werden Rechte automatisch entzogen
+    
+    **Vorteile:**
+    
+    - Minimiert Angriffsfläche
+    - Reduziert Risiko von Insider-Bedrohungen
+    - Verbessert Audit-Trail
+    
+    <Tip>
+      JIT-Access wird protokolliert und kann jederzeit überprüft werden.
+    </Tip>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Kategorie 7: Schwachstellen- und Patch-Management
+
+Eine sichere Architektur muss kontinuierlich gepflegt werden, um gegen neue Bedrohungen gewappnet zu sein.
+
+<CardGroup cols={2}>
+  <Card title="Kontinuierliches Scanning" icon="magnifying-glass">
+    Regelmäßige automatische Scans auf bekannte Sicherheitslücken.
+  </Card>
+  <Card title="Automatisiertes Patching" icon="gear">
+    Automatische Installation von Sicherheitspatches.
+  </Card>
+  <Card title="Kernel-Live-Patching" icon="bolt">
+    Kritische Patches ohne Neustart.
+  </Card>
+</CardGroup>
+
+### Maßnahmen im Detail
+
+<AccordionGroup>
+  <Accordion title="Kontinuierliches Schwachstellen-Scanning" icon="magnifying-glass">
+    **Proaktive Bedrohungserkennung:**
+    
+    Wir scannen unsere gesamte Infrastruktur und alle Software-Artefakte regelmäßig und automatisiert auf bekannte Sicherheitslücken:
+    
+    - **Infrastruktur-Scans:** Wöchentlich
+    - **Container-Scans:** Bei jedem Build
+    - **Dependency-Scans:** Täglich
+    - **Konfigurations-Scans:** Kontinuierlich
+    
+    **Priorisierung:**
+    
+    Die Ergebnisse werden nach Kritikalität (CVSS-Score) priorisiert:
+    
+    - **Critical (9.0-10.0):** Sofortige Behebung
+    - **High (7.0-8.9):** Behebung innerhalb 48 Stunden
+    - **Medium (4.0-6.9):** Behebung innerhalb 7 Tagen
+    - **Low (0.1-3.9):** Behebung bei nächstem Update-Zyklus
+    
+    <Warning>
+      Kritische Schwachstellen werden sofort behoben, bevor sie ausgenutzt werden können.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Automatisiertes und zeitnahes Patch-Management" icon="gear">
+    **Schnelle Reaktion auf Bedrohungen:**
+    
+    Für unsere Betriebssysteme ist ein automatisiertes Patch-Management (Unattended Upgrades) für Sicherheitspatches aktiviert:
+    
+    - **Automatische Installation:** Sicherheitspatches werden automatisch installiert
+    - **Zeitnahe Updates:** Innerhalb von 24 Stunden nach Veröffentlichung
+    - **Testing:** Patches werden zuerst in Test-Umgebung geprüft
+    - **Rollback:** Automatisches Rollback bei Problemen
+    
+    **Prozess:**
+    
+    1. Patch wird veröffentlicht
+    2. Automatisches Testing in Staging
+    3. Deployment in Production (nach erfolgreichem Test)
+    4. Verifizierung und Monitoring
+    
+    <Tip>
+      Kritische Sicherheitspatches werden auch außerhalb der regulären Wartungsfenster installiert.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Kernel-Live-Patching" icon="bolt">
+    **Maximale Verfügbarkeit:**
+    
+    Um maximale Sicherheit bei gleichzeitig hoher Verfügbarkeit zu gewährleisten, setzen wir wo möglich auf Kernel-Live-Patching:
+    
+    **Vorteile:**
+    
+    - Kritische Sicherheitslücken im Kern des Betriebssystems können geschlossen werden
+    - **Ohne Neustart:** Server bleiben während des Patching online
+    - **Keine Downtime:** Keine Unterbrechung des Betriebs
+    - **Schnelle Reaktion:** Patches können sofort angewendet werden
+    
+    **Einsatz:**
+    
+    Kernel-Live-Patching wird für kritische Sicherheitslücken verwendet, die einen sofortigen Patch erfordern, aber keinen Neustart erlauben.
+    
+    <Check>
+      Live-Patching wird nur für kritische Sicherheitslücken verwendet und wird gründlich getestet.
+    </Check>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Kategorie 8: Governance, Compliance & Datensouveränität
+
+Technische Maßnahmen sind nur eine Seite der Medaille. Wahre Sicherheit entsteht durch etablierte Prozesse, externe Überprüfung und die Freiheit unserer Kunden, die Hoheit über ihre Daten zu behalten.
+
+<CardGroup cols={2}>
+  <Card title="ISO 27001 Zertifizierung" icon="certificate">
+    Zertifizierte Partner-Rechenzentren und eigene Zertifizierung in Arbeit.
+  </Card>
+  <Card title="Datensouveränität" icon="globe">
+    Volle Kontrolle über den Speicherort Ihrer Daten.
+  </Card>
+  <Card title="Hosting-Flexibilität" icon="server">
+    On-Premise, Private Cloud oder Managed Private Cloud.
+  </Card>
+</CardGroup>
+
+### Maßnahmen im Detail
+
+<AccordionGroup>
+  <Accordion title="Zertifizierte Partner-Rechenzentren (ISO 27001)" icon="certificate">
+    **Höchste Standards:**
+    
+    Für alle von uns verwalteten Kundeninstanzen arbeiten wir ausschließlich mit Rechenzentrumspartnern zusammen, die nach ISO/IEC 27001 zertifiziert sind.
+    
+    **ISO 27001 garantiert:**
+    
+    - Umfassendes Informationssicherheits-Managementsystem (ISMS)
+    - Höchste Standards bei physischer Sicherheit
+    - Strenge Zutrittskontrollen
+    - Professionelles Risikomanagement
+    - Etablierte Betriebsprozesse
+    
+    <Tip>
+      Diese internationale Norm bestätigt, dass unsere Partner höchste Sicherheitsstandards einhalten.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Anstreben der eigenen ISO 27001 Zertifizierung" icon="certificate">
+    **Eigenes ISMS:**
+    
+    Localmind befindet sich aktuell im Prozess der Implementierung eines eigenen Informationssicherheits-Managementsystems (ISMS) mit dem klaren Ziel, die ISO 27001 Zertifizierung für unsere internen Prozesse und unser Produktmanagement zu erlangen.
+    
+    **Vorteile:**
+    
+    - Formalisiert unser Engagement für Sicherheit
+    - Macht Sicherheit extern überprüfbar
+    - Erhöht Vertrauen bei Kunden
+    - Etabliert kontinuierliche Verbesserung
+    
+    <Check>
+      Die Zertifizierung wird voraussichtlich in den nächsten 12 Monaten abgeschlossen.
+    </Check>
+  </Accordion>
+
+  <Accordion title="Maximale Datensouveränität & Hosting-Flexibilität" icon="globe">
+    **Ihre Wahl, Ihre Kontrolle:**
+    
+    Wir haben uns strategisch entschieden, keine eigene universelle Public-Cloud-Infrastruktur mehr zu betreiben. Stattdessen geben wir Ihnen die volle Kontrolle und Wahlfreiheit über den Speicherort Ihrer Daten.
+    
+    **Hosting-Optionen:**
+    
+    <Tabs>
+      <Tab title="On-Premise">
+        **Vollständige Kontrolle:**
+        
+        Betrieb in Ihrer eigenen, vollständig kontrollierten Infrastruktur. Dabei kann ausgewählt werden:
+        
+        - **Applikation on-premise:** Nur die Applikation läuft lokal, GPU-Leistung wird extern bezogen
+        - **Vollständig on-premise:** Applikation und GPU-Leistung laufen lokal
+        
+        **Vorteile:**
+        - Maximale Kontrolle über Daten
+        - Compliance mit strengsten Anforderungen
+        - Keine Daten verlassen Ihr Netzwerk
+      </Tab>
+
+      <Tab title="Private Cloud Ihrer Wahl">
+        **Flexibilität:**
+        
+        Hosting bei einem von Ihnen gewählten und auditierten Virtual Private Cloud-/VM-Anbieter oder Systemintegrator.
+        
+        **Vorteile:**
+        - Sie wählen den Anbieter
+        - Sie kontrollieren die Infrastruktur
+        - Flexibilität bei der Skalierung
+      </Tab>
+
+      <Tab title="Managed Private Cloud">
+        **Gemanagte Lösung:**
+        
+        Nutzen Sie die Vorteile einer gemanagten Lösung in den hochsicheren, ISO-zertifizierten Rechenzentren unserer Partner.
+        
+        **Vorteile:**
+        - Professionelles Management
+        - ISO 27001 zertifizierte Rechenzentren
+        - Hohe Verfügbarkeit
+        - Regelmäßige Updates und Wartung
+      </Tab>
+    </Tabs>
+    
+    **Definierter Einsatz eigener Infrastruktur:**
+    
+    Unsere eigene, neu gehärtete Cloud-Infrastruktur wird ausschließlich für nicht-kritische Anwendungsfälle eingesetzt, oder auf explizitem Wunsch des Kunden.
+    
+    <Note>
+      **Ihre Daten, Ihre Wahl:** Sie entscheiden, welches Modell am besten zu Ihren Sicherheits- und Compliance-Anforderungen passt.
+    </Note>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Sicherheitsarchitektur im Überblick
+
+<CardGroup cols={3}>
+  <Card title="Perimeter-Schutz" icon="shield">
+    Firewall, WAF, VLAN-Segmentierung
+  </Card>
+  <Card title="Host-Sicherheit" icon="server">
+    Gehärtete Systeme, physische Trennung
+  </Card>
+  <Card title="Anwendungsschutz" icon="cube">
+    Zero-Inbound-Access, Service-Isolation
+  </Card>
+  <Card title="Datenschutz" icon="lock">
+    Encryption-at-Rest, Immutable Backups
+  </Card>
+  <Card title="Überwachung" icon="eye">
+    SIEM, EDR, FIM, Auditing
+  </Card>
+  <Card title="Zugriffskontrolle" icon="key">
+    MFA, Least Privilege, JIT Access
+  </Card>
+</CardGroup>
+
+---
+
+## Compliance & Zertifizierungen
+
+<CardGroup cols={2}>
+  <Card title="ISO 27001" icon="certificate">
+    Partner-Rechenzentren sind ISO 27001 zertifiziert. Eigene Zertifizierung in Arbeit.
+  </Card>
+  <Card title="Datenschutz" icon="shield-halved">
+    DSGVO-konform durch Datensouveränität und transparente Prozesse.
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+  **Haben Sie Fragen zu unserem Sicherheitskonzept?** Kontaktieren Sie unser Sicherheitsteam unter [security@localmind.ai](mailto:security@localmind.ai) oder besuchen Sie unsere [Ressourcen-Seite](/compliance-security/resources) für weitere Informationen.
+</Note>
